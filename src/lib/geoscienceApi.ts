@@ -17,7 +17,7 @@ const COMMON_PARAMS = new URLSearchParams({
 
 export async function fetchSubstations(): Promise<Substation[]> {
   const url = `${BASE}/0/query?${COMMON_PARAMS}`
-  const res = await fetch(url)
+  const res = await fetch(url, { signal: AbortSignal.timeout(15_000) })
   if (!res.ok) throw new Error(`Geoscience Australia substations error: ${res.status}`)
   const data: GAQueryResponse = await res.json()
 
@@ -39,7 +39,7 @@ export async function fetchSubstations(): Promise<Substation[]> {
 
 export async function fetchTransmissionLines(): Promise<TransmissionLine[]> {
   const url = `${BASE}/2/query?${COMMON_PARAMS}`
-  const res = await fetch(url)
+  const res = await fetch(url, { signal: AbortSignal.timeout(15_000) })
   if (!res.ok) throw new Error(`Geoscience Australia lines error: ${res.status}`)
   const data: GAQueryResponse = await res.json()
 

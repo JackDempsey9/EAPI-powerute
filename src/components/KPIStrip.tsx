@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import type { KPIData } from '@/lib/types'
 import { StatusDot } from './StatusDot'
 
@@ -33,6 +34,13 @@ interface KPIStripProps {
 }
 
 export function KPIStrip({ kpi }: KPIStripProps) {
+  // Tick every second to keep the "Xs ago" counter accurate
+  const [, forceUpdate] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => forceUpdate((n) => n + 1), 1_000)
+    return () => clearInterval(id)
+  }, [])
+
   const secondsAgo = kpi.lastUpdated
     ? Math.floor((Date.now() - kpi.lastUpdated.getTime()) / 1000)
     : null

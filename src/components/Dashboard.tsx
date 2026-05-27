@@ -5,6 +5,7 @@ import { useEmergencyFeed } from '@/hooks/useEmergencyFeed'
 import { useSubstations } from '@/hooks/useSubstations'
 import { useOutages } from '@/hooks/useOutages'
 import { findProximityAlerts, getKPIData, PROXIMITY_THRESHOLDS } from '@/lib/proximity'
+import type { ProximityAlert } from '@/lib/types'
 import { KPIStrip } from './KPIStrip'
 import { DashboardMap } from './DashboardMap'
 import { IncidentFeed } from './IncidentFeed'
@@ -16,12 +17,15 @@ export function Dashboard() {
 
   const proximityAlerts = useMemo(() => {
     if (!feed.incidents.length || !infrastructure.substations.length) return []
-    // Use bushfire threshold as default (conservative)
-    return findProximityAlerts(
-      feed.incidents,
-      infrastructure.substations,
-      PROXIMITY_THRESHOLDS.Bushfire
-    )
+    // Apply per-type thresholds: Bushfire=5km, Storm=10km, Flood=8km, Accident=2km, etc.
+    const allAlerts: ProximityAlert[] = []
+    for (const [type, threshold] of Object.entries(PROXIMITY_THRESHOLDS)) {
+      const typeIncidents = feed.incidents.filter((i) => i.type === type)
+      if (typeIncidents.length > 0) {
+        allAlerts.push(...findProximityAlerts(typeIncidents, infrastructure.substations, threshold))
+      }
+    }
+    return allAlerts
   }, [feed.incidents, infrastructure.substations])
 
   const kpi = useMemo(
