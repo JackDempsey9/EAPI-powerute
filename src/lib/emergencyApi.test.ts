@@ -1,18 +1,29 @@
 import { describe, it, expect } from 'vitest'
 import { parseIncidents, categoriseIncidentType } from './emergencyApi'
 
+// Mock using the ACTUAL emergencyAPI.com property format
 const mockFeature: GeoJSON.Feature = {
   type: 'Feature',
-  id: 'abc123',
+  id: 'sa-cfs-abc123',
   properties: {
-    category: 'Fire',
-    status: 'Emergency Warning',
+    source: { state: 'SA', agency: 'CFS', feedId: 'sa-cfs' },
     title: 'Bushfire - McLaren Vale',
-    location: 'McLaren Vale SA',
-    state: 'SA',
-    sourceOrganisation: 'CFS',
-    updated: '2026-05-27T10:00:00Z',
-    link: 'https://cfs.sa.gov.au/incidents/123',
+    eventType: 'bushfire',
+    status: 'active',
+    warningLevel: 'emergency-warning',
+    severity: 'Unknown',
+    location: {
+      state: 'SA',
+      suburb: 'McLaren Vale',
+      address: 'McLaren Vale Road',
+      latitude: -35.09,
+      longitude: 138.71,
+    },
+    timestamps: {
+      reported: null,
+      updated: '2026-05-27T10:00:00Z',
+      fetched: '2026-05-27T10:00:00Z',
+    },
   },
   geometry: { type: 'Point', coordinates: [138.71, -35.09] },
 }
@@ -21,11 +32,17 @@ describe('categoriseIncidentType', () => {
   it('maps Fire to Bushfire', () => {
     expect(categoriseIncidentType('Fire')).toBe('Bushfire')
   })
+  it('maps bushfire to Bushfire', () => {
+    expect(categoriseIncidentType('bushfire')).toBe('Bushfire')
+  })
   it('maps Thunderstorm to Storm', () => {
     expect(categoriseIncidentType('Thunderstorm')).toBe('Storm')
   })
   it('maps Flood to Flood', () => {
     expect(categoriseIncidentType('Flood')).toBe('Flood')
+  })
+  it('maps vehicle_accident to Accident', () => {
+    expect(categoriseIncidentType('vehicle_accident')).toBe('Accident')
   })
   it('maps unknown to Other', () => {
     expect(categoriseIncidentType('SomethingElse')).toBe('Other')
@@ -33,7 +50,7 @@ describe('categoriseIncidentType', () => {
 })
 
 describe('parseIncidents', () => {
-  it('parses a valid GeoJSON FeatureCollection', () => {
+  it('parses a feature with the actual API shape', () => {
     const collection: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
       features: [mockFeature],
@@ -44,18 +61,56 @@ describe('parseIncidents', () => {
     expect(incidents[0].coordinates).toEqual([138.71, -35.09])
     expect(incidents[0].status).toBe('Emergency Warning')
     expect(incidents[0].source).toBe('CFS')
+    expect(incidents[0].state).toBe('SA')
+    expect(incidents[0].location).toBe('McLaren Vale Road')
+    expect(incidents[0].updatedAt).toBe('2026-05-27T10:00:00Z')
   })
 
-  it('skips features without Point geometry', () => {
-    const withPolygon: GeoJSON.Feature = {
+  it('handles warningLevel: "none" as Not Applicable', () => {
+    const feature: GeoJSON.Feature = {
       ...mockFeature,
-      geometry: { type: 'Polygon', coordinates: [] },
+      properties: { ...mockFeature.properties, warningLevel: 'none' },
     }
-    const collection: GeoJSON.FeatureCollection = {
-      type: 'FeatureCollection',
-      features: [withPolygon],
+    const incidents = parseIncidents({ type: 'FeatureCollection', features: [feature] })
+    expect(incidents[0].status).toBe('Not Applicable')
+  })
+
+  it('handles "watch-and-act" warningLevel (dash format)', () => {
+    const feature: GeoJSON.Feature = {
+      ...mockFeature,
+      properties: { ...mockFeature.properties, warningLevel: 'watch-and-act' },
     }
-    expect(parseIncidents(collection)).toHaveLength(0)
+    const incidents = parseIncidents({ type: 'FeatureCollection', features: [feature] })
+    expect(incidents[0].status).toBe('Watch and Act')
+  })
+
+  it('parses Polygon geometry using location lat/lng', () => {
+    const polyFeature: GeoJSON.Feature = {
+      type: 'Feature',
+      id: 'poly-1',
+      properties: {
+        ...mockFeature.properties,
+        location: { state: 'SA', suburb: 'Test', address: 'Test', latitude: -34.5, longitude: 138.2 },
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[[138.2, -34.5], [138.3, -34.5], [138.3, -34.6], [138.2, -34.5]]],
+      },
+    }
+    const incidents = parseIncidents({ type: 'FeatureCollection', features: [polyFeature] })
+    expect(incidents).toHaveLength(1)
+    expect(incidents[0].coordinates).toEqual([138.2, -34.5])
+  })
+
+  it('skips features with no usable coordinates', () => {
+    const bad: GeoJSON.Feature = {
+      type: 'Feature',
+      id: 'bad',
+      properties: { eventType: 'bushfire', warningLevel: 'none', title: 'Test' },
+      geometry: { type: 'LineString', coordinates: [[138, -35], [139, -35]] },
+    }
+    const incidents = parseIncidents({ type: 'FeatureCollection', features: [bad] })
+    expect(incidents).toHaveLength(0)
   })
 
   it('returns empty array for empty collection', () => {
