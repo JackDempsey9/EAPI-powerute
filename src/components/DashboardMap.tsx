@@ -7,6 +7,13 @@ import { PoweredBy } from './PoweredBy'
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''
 
+/** Escape untrusted strings before inserting into HTML */
+function esc(s: unknown): string {
+  return String(s ?? '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] ?? c)
+  )
+}
+
 const INCIDENT_COLOURS: Record<string, string> = {
   Bushfire: '#ef4444',
   Storm:    '#f97316',
@@ -177,15 +184,17 @@ export function DashboardMap({
         const props = feature.properties ?? {}
         const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number]
 
+        // Use palette colour keyed by type (never trust raw props.color from feature properties)
+        const safeColor = INCIDENT_COLOURS[String(props.type)] ?? '#94a3b8'
         new mapboxgl.Popup({ closeButton: true, maxWidth: '280px' })
           .setLngLat(coords)
           .setHTML(`
             <div style="font-family:system-ui;padding:4px;">
-              <div style="font-size:13px;font-weight:700;color:${props.color};margin-bottom:4px;">${props.type}</div>
-              <div style="font-size:12px;font-weight:600;margin-bottom:2px;">${props.title}</div>
-              <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">${props.location}</div>
-              ${props.nearestSubstation ? `<div style="font-size:11px;color:#f97316;">⚡ ${props.distanceKm}km from ${props.nearestSubstation}</div>` : ''}
-              <div style="font-size:10px;color:#64748b;margin-top:4px;">Source: ${props.source} · ${props.status}</div>
+              <div style="font-size:13px;font-weight:700;color:${safeColor};margin-bottom:4px;">${esc(props.type)}</div>
+              <div style="font-size:12px;font-weight:600;margin-bottom:2px;">${esc(props.title)}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">${esc(props.location)}</div>
+              ${props.nearestSubstation ? `<div style="font-size:11px;color:#f97316;">⚡ ${esc(props.distanceKm)}km from ${esc(props.nearestSubstation)}</div>` : ''}
+              <div style="font-size:10px;color:#64748b;margin-top:4px;">Source: ${esc(props.source)} · ${esc(props.status)}</div>
             </div>
           `)
           .addTo(map)
