@@ -43,9 +43,4 @@ Open [http://localhost:3000](http://localhost:3000)
 - **Framework:** Next.js 15 (App Router)
 - **Map:** Mapbox GL JS
 - **Styling:** Tailwind CSS
-- **Deployment:** Vercel
 - **Data:** emergencyAPI.com · Geoscience Australia · SAPN outage feed
-
-## Live URL
-
-Deployed at: https://eapi-sapn-showcase.vercel.app
