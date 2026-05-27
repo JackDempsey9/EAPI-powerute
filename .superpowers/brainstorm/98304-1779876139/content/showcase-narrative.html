@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Showcase Narrative Storyboard</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: system-ui, -apple-system, sans-serif; background: #0a0f1a; color: #e2e8f0; min-height: 100%; }
+
+body { padding: 1.5rem 2rem 3rem; }
+
+.page-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.3rem; color: #f1f5f9; }
+.page-sub { color: #64748b; font-size: 0.88rem; margin-bottom: 2rem; }
+
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.45rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #3b82f6, #8b5cf6, #ef4444, #22c55e);
+}
+
+.beat {
+  position: relative;
+  margin-bottom: 1.5rem;
+  background: #111827;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.beat:hover { border-color: #334155; }
+
+.beat-dot {
+  position: absolute;
+  left: -1.78rem;
+  top: 1.1rem;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid #0a0f1a;
+}
+
+.beat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #1e293b;
+}
+.beat-time {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  min-width: 60px;
+  font-family: monospace;
+}
+.beat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.beat-title { font-size: 0.95rem; font-weight: 600; color: #f1f5f9; }
+
+.beat-body {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 0;
+}
+
+.beat-desc { padding: 0.85rem 1rem; }
+.beat-desc p { font-size: 0.82rem; color: #94a3b8; line-height: 1.6; margin-bottom: 0.5rem; }
+.beat-desc p:last-child { margin-bottom: 0; }
+
+.beat-visual {
+  padding: 0.75rem;
+  border-left: 1px solid #1e293b;
+  background: #0d1420;
+}
+
+.wow-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #451a03;
+  border: 1px solid #f97316;
+  color: #fb923c;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-top: 0.4rem;
+}
+
+/* Beat colour coding */
+.beat-1 .beat-dot { background: #3b82f6; }
+.beat-1 .beat-label { background: #1e3a5f; color: #60a5fa; }
+.beat-2 .beat-dot { background: #8b5cf6; }
+.beat-2 .beat-label { background: #2e1065; color: #a78bfa; }
+.beat-3 .beat-dot { background: #ef4444; }
+.beat-3 .beat-label { background: #450a0a; color: #f87171; }
+.beat-4 .beat-dot { background: #f97316; }
+.beat-4 .beat-label { background: #431407; color: #fb923c; }
+.beat-5 .beat-dot { background: #22c55e; }
+.beat-5 .beat-label { background: #052e16; color: #4ade80; }
+
+/* Mini map mockup */
+.mini-map {
+  border-radius: 6px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.data-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 20px;
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin: 2px;
+}
+.data-pill.live { border-color: #22c55e; color: #4ade80; }
+.data-pill.alert { border-color: #ef4444; color: #f87171; }
+.data-pill.warn { border-color: #f97316; color: #fb923c; }
+
+.code-snip {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: #7dd3fc;
+  line-height: 1.6;
+}
+.code-snip .k { color: #c084fc; }
+.code-snip .s { color: #86efac; }
+.code-snip .n { color: #fbbf24; }
+</style>
+</head>
+<body>
+
+<div class="page-title">Showcase Video — Narrative Storyboard</div>
+<p class="page-sub">The story the video tells, beat by beat. Does this arc feel right?</p>
+
+<div class="timeline">
+
+  <!-- Beat 1: The Reveal -->
+  <div class="beat beat-1">
+    <div class="beat-dot"></div>
+    <div class="beat-header">
+      <span class="beat-time">0:00–0:25</span>
+      <span class="beat-label">ACT 1</span>
+      <span class="beat-title">The Reveal — South Australia's Grid, Live</span>
+    </div>
+    <div class="beat-body">
+      <div class="beat-desc">
+        <p>Camera opens on a dark map of South Australia. Real substation locations from Geoscience Australia appear one by one as glowing 3D icons — transmission lines draw between them.</p>
+        <p>No narration needed. Just the visual: hundreds of real infrastructure assets across the state, from the CBD to the Eyre Peninsula. The scale is immediately impressive.</p>
+        <div class="wow-badge">★ WOW — Real infrastructure. Real locations. No mockup.</div>
+      </div>
+      <div class="beat-visual">
+        <svg viewBox="0 0 220 130" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="220" height="130" fill="#0f172a" rx="6"/>
+          <!-- SA rough outline suggestion -->
+          <polyline points="60,20 140,15 170,40 165,90 130,115 80,110 50,85 45,50 60,20" fill="none" stroke="#1e3a5f" stroke-width="1.5"/>
+          <!-- transmission lines -->
+          <line x1="90" y1="65" x2="115" y2="45" stroke="#1e40af" stroke-width="1" opacity="0.6"/>
+          <line x1="115" y1="45" x2="140" y2="55" stroke="#1e40af" stroke-width="1" opacity="0.6"/>
+          <line x1="90" y1="65" x2="80" y2="85" stroke="#1e40af" stroke-width="1" opacity="0.6"/>
+          <line x1="80" y1="85" x2="100" y2="95" stroke="#1e40af" stroke-width="1" opacity="0.6"/>
+          <line x1="115" y1="45" x2="105" y2="25" stroke="#1e40af" stroke-width="1" opacity="0.6"/>
+          <!-- substation icons (glowing dots) -->
+          <circle cx="90" cy="65" r="5" fill="#3b82f6" opacity="0.9"/>
+          <circle cx="90" cy="65" r="9" fill="#3b82f6" opacity="0.15"/>
+          <circle cx="115" cy="45" r="4" fill="#3b82f6" opacity="0.8"/>
+          <circle cx="115" cy="45" r="7" fill="#3b82f6" opacity="0.12"/>
+          <circle cx="140" cy="55" r="3.5" fill="#3b82f6" opacity="0.7"/>
+          <circle cx="80" cy="85" r="4" fill="#3b82f6" opacity="0.8"/>
+          <circle cx="100" cy="95" r="3" fill="#3b82f6" opacity="0.7"/>
+          <circle cx="105" cy="25" r="3" fill="#3b82f6" opacity="0.7"/>
+          <circle cx="70" cy="50" r="3" fill="#3b82f6" opacity="0.6"/>
+          <circle cx="125" cy="75" r="3" fill="#3b82f6" opacity="0.6"/>
+          <!-- label -->
+          <text x="110" y="123" text-anchor="middle" fill="#1e40af" font-size="7" font-family="monospace">REAL SUBSTATIONS · GEOSCIENCE AUSTRALIA</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beat 2: The Problem -->
+  <div class="beat beat-2">
+    <div class="beat-dot"></div>
+    <div class="beat-header">
+      <span class="beat-time">0:25–0:50</span>
+      <span class="beat-label">ACT 2</span>
+      <span class="beat-title">The Problem — Outages Are Already Too Late</span>
+    </div>
+    <div class="beat-body">
+      <div class="beat-desc">
+        <p>The SAPN outage overlay appears — affected zones highlighted in amber/red. These are outages that have <em>already happened</em>. Customers already without power.</p>
+        <p>A simple title card or voiceover: <strong>"Your outage management system tells you what's already broken."</strong></p>
+        <p>This is the tension — reactive systems, no warning. Sets up the solution.</p>
+      </div>
+      <div class="beat-visual">
+        <svg viewBox="0 0 220 130" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="220" height="130" fill="#0f172a" rx="6"/>
+          <polyline points="60,20 140,15 170,40 165,90 130,115 80,110 50,85 45,50 60,20" fill="none" stroke="#1e3a5f" stroke-width="1.5"/>
+          <!-- outage zones (amber blobs) -->
+          <circle cx="90" cy="65" r="18" fill="#f97316" opacity="0.15"/>
+          <circle cx="90" cy="65" r="12" fill="#f97316" opacity="0.2"/>
+          <circle cx="115" cy="45" r="14" fill="#ef4444" opacity="0.12"/>
+          <!-- substations (dimmed = no power) -->
+          <circle cx="90" cy="65" r="5" fill="#f97316" opacity="0.9"/>
+          <circle cx="115" cy="45" r="4" fill="#ef4444" opacity="0.8"/>
+          <circle cx="140" cy="55" r="3.5" fill="#3b82f6" opacity="0.7"/>
+          <circle cx="80" cy="85" r="4" fill="#3b82f6" opacity="0.8"/>
+          <!-- outage label -->
+          <rect x="68" y="55" width="45" height="12" fill="#7c2d12" rx="2"/>
+          <text x="90" y="64" text-anchor="middle" fill="#fed7aa" font-size="6" font-weight="bold">OUTAGE ACTIVE</text>
+          <text x="110" y="123" text-anchor="middle" fill="#44403c" font-size="7" font-family="monospace">OUTAGES ALREADY HAPPENED · CUSTOMERS AFFECTED</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beat 3: The Layer -->
+  <div class="beat beat-3">
+    <div class="beat-dot"></div>
+    <div class="beat-header">
+      <span class="beat-time">0:50–1:40</span>
+      <span class="beat-label">ACT 3</span>
+      <span class="beat-title">The Layer — emergencyAPI.com Arrives</span>
+    </div>
+    <div class="beat-body">
+      <div class="beat-desc">
+        <p>The emergencyAPI.com incident layer fades in. Real incidents — bushfires, storms, accidents — appear as pulsing markers across SA. The feed is live. The data is real.</p>
+        <p>Proximity rings expand outward from incidents near substations. One lights up: a CFS bushfire <strong>2.1km from a zone substation</strong> in the Adelaide Hills. The substation icon pulses red.</p>
+        <p>The KPI strip reacts: <strong style="color:#ef4444;">EXTREME FIRE DANGER · 3 INCIDENTS NEAR INFRASTRUCTURE</strong></p>
+        <div class="wow-badge">★ WOW MOMENT — Real incident. Real substation. Real proximity.</div>
+      </div>
+      <div class="beat-visual">
+        <svg viewBox="0 0 220 130" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="220" height="130" fill="#0f172a" rx="6"/>
+          <polyline points="60,20 140,15 170,40 165,90 130,115 80,110 50,85 45,50 60,20" fill="none" stroke="#1e3a5f" stroke-width="1.5"/>
+          <!-- transmission lines -->
+          <line x1="90" y1="65" x2="115" y2="45" stroke="#1e40af" stroke-width="1" opacity="0.4"/>
+          <line x1="115" y1="45" x2="140" y2="55" stroke="#1e40af" stroke-width="1" opacity="0.4"/>
+          <line x1="90" y1="65" x2="80" y2="85" stroke="#1e40af" stroke-width="1" opacity="0.4"/>
+          <!-- proximity ring (alert) -->
+          <circle cx="105" cy="55" r="22" fill="none" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+          <circle cx="105" cy="55" r="15" fill="#ef4444" opacity="0.06"/>
+          <!-- bushfire incident -->
+          <circle cx="105" cy="55" r="7" fill="#dc2626" opacity="0.9"/>
+          <circle cx="105" cy="55" r="12" fill="#dc2626" opacity="0.2"/>
+          <text x="105" y="59" text-anchor="middle" fill="white" font-size="6">🔥</text>
+          <!-- alert substation -->
+          <circle cx="90" cy="65" r="6" fill="#ef4444" opacity="1"/>
+          <circle cx="90" cy="65" r="11" fill="#ef4444" opacity="0.25"/>
+          <!-- other substations normal -->
+          <circle cx="115" cy="45" r="4" fill="#3b82f6" opacity="0.8"/>
+          <circle cx="140" cy="55" r="3.5" fill="#3b82f6" opacity="0.7"/>
+          <circle cx="80" cy="85" r="4" fill="#3b82f6" opacity="0.8"/>
+          <!-- storm incident -->
+          <circle cx="70" cy="40" r="5" fill="#8b5cf6" opacity="0.8"/>
+          <circle cx="70" cy="40" r="9" fill="#8b5cf6" opacity="0.2"/>
+          <!-- alert card -->
+          <rect x="112" y="60" width="70" height="28" fill="#1a0a0a" rx="3" stroke="#ef4444" stroke-width="1"/>
+          <text x="117" y="70" fill="#f87171" font-size="6" font-weight="bold">⚡ BUSHFIRE ALERT</text>
+          <text x="117" y="79" fill="#94a3b8" font-size="5.5">2.1km from Meadows Sub</text>
+          <text x="117" y="86" fill="#64748b" font-size="5">CFS · emergencyapi.com</text>
+          <text x="110" y="123" text-anchor="middle" fill="#7f1d1d" font-size="7" font-family="monospace">LIVE · EMERGENCYAPI.COM · PRE-WARNING ACTIVE</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beat 4: The Data -->
+  <div class="beat beat-4">
+    <div class="beat-dot"></div>
+    <div class="beat-header">
+      <span class="beat-time">1:40–2:10</span>
+      <span class="beat-label">ACT 4</span>
+      <span class="beat-title">The Data — What the API Actually Gives You</span>
+    </div>
+    <div class="beat-body">
+      <div class="beat-desc">
+        <p>Click on the incident card. A panel slides open showing the raw emergencyAPI.com response — clean, structured GeoJSON. Incident type, coordinates, severity, source agency (CFS), timestamp.</p>
+        <p>This speaks directly to the developer/technical lead watching — <em>"this is what you're integrating. It's this clean. It's this easy."</em></p>
+        <p>Briefly show the endpoint and the free tier — <strong>500 requests/day, no credit card.</strong></p>
+      </div>
+      <div class="beat-visual">
+        <div class="code-snip">
+<span class="k">{</span><br>
+&nbsp;&nbsp;<span class="n">"type"</span>: <span class="s">"Feature"</span>,<br>
+&nbsp;&nbsp;<span class="n">"properties"</span>: <span class="k">{</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">"category"</span>: <span class="s">"Bushfire"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">"status"</span>: <span class="s">"Emergency Warning"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">"source"</span>: <span class="s">"CFS"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">"state"</span>: <span class="s">"SA"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">"updated"</span>: <span class="s">"2026-05-27T..."</span><br>
+&nbsp;&nbsp;<span class="k">}</span>,<br>
+&nbsp;&nbsp;<span class="n">"geometry"</span>: <span class="k">{</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">"type"</span>: <span class="s">"Point"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="n">"coordinates"</span>: [<span class="s">138.71, -35.09</span>]<br>
+&nbsp;&nbsp;<span class="k">}</span><br>
+<span class="k">}</span>
+        </div>
+        <div style="margin-top:0.5rem;display:flex;flex-wrap:wrap;gap:3px;">
+          <span class="data-pill live">● Live GeoJSON</span>
+          <span class="data-pill live">● 500 req/day free</span>
+          <span class="data-pill">CAP-AU Standard</span>
+          <span class="data-pill">All 8 states</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beat 5: National Scale -->
+  <div class="beat beat-5">
+    <div class="beat-dot"></div>
+    <div class="beat-header">
+      <span class="beat-time">2:10–2:45</span>
+      <span class="beat-label">ACT 5</span>
+      <span class="beat-title">The Scale — Zoom Out to Australia</span>
+    </div>
+    <div class="beat-body">
+      <div class="beat-desc">
+        <p>Camera zooms out smoothly to show all of Australia. Incidents light up across every state — NSW bushfires, QLD floods, VIC storms. The same feed. The same API.</p>
+        <p>For any utility watching in another state: <strong>"This works for you too."</strong> No additional setup. Same endpoint. National coverage.</p>
+        <p>Close on the emergencyAPI.com logo and website. Clean. Confident.</p>
+        <div class="wow-badge">★ WOW — One API. Every state. Every emergency type.</div>
+      </div>
+      <div class="beat-visual">
+        <svg viewBox="0 0 220 130" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="220" height="130" fill="#0f172a" rx="6"/>
+          <!-- Australia rough outline -->
+          <path d="M 40,30 L 80,20 L 130,25 L 175,35 L 190,55 L 185,75 L 170,90 L 155,105 L 130,110 L 110,100 L 95,110 L 80,100 L 60,90 L 40,70 L 30,50 Z" fill="none" stroke="#1e3a5f" stroke-width="1.5"/>
+          <!-- State boundaries suggestion -->
+          <line x1="110" y1="30" x2="110" y2="95" stroke="#1e293b" stroke-width="0.5" stroke-dasharray="2,2"/>
+          <line x1="60" y1="65" x2="175" y2="65" stroke="#1e293b" stroke-width="0.5" stroke-dasharray="2,2"/>
+          <!-- SA highlighted -->
+          <path d="M 60,55 L 110,50 L 110,95 L 80,100 L 60,90 L 55,70 Z" fill="#1e3a5f" opacity="0.3"/>
+          <!-- SA incidents -->
+          <circle cx="85" cy="72" r="5" fill="#ef4444" opacity="0.9"/>
+          <circle cx="85" cy="72" r="9" fill="#ef4444" opacity="0.2"/>
+          <circle cx="75" cy="60" r="3.5" fill="#8b5cf6" opacity="0.8"/>
+          <!-- NSW incidents -->
+          <circle cx="155" cy="75" r="4" fill="#ef4444" opacity="0.8"/>
+          <circle cx="145" cy="65" r="3" fill="#f97316" opacity="0.8"/>
+          <!-- QLD -->
+          <circle cx="150" cy="45" r="4" fill="#3b82f6" opacity="0.8"/>
+          <circle cx="165" cy="50" r="3" fill="#f97316" opacity="0.7"/>
+          <!-- VIC -->
+          <circle cx="135" cy="88" r="3.5" fill="#ef4444" opacity="0.8"/>
+          <!-- WA -->
+          <circle cx="55" cy="60" r="3" fill="#8b5cf6" opacity="0.7"/>
+          <!-- labels -->
+          <text x="85" y="79" text-anchor="middle" fill="#60a5fa" font-size="5">SA</text>
+          <text x="155" y="80" text-anchor="middle" fill="#94a3b8" font-size="5">NSW</text>
+          <text x="150" y="53" text-anchor="middle" fill="#94a3b8" font-size="5">QLD</text>
+          <text x="110" y="123" text-anchor="middle" fill="#14532d" font-size="7" font-family="monospace">ALL AUSTRALIA · ONE API · EVERY STATE</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:2rem;padding:1rem;background:#111827;border:1px solid #1e293b;border-radius:10px;">
+  <div style="font-size:0.75rem;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;">Core Narrative Thread</div>
+  <div style="font-size:0.9rem;color:#e2e8f0;line-height:1.7;">
+    <span style="color:#60a5fa;">Real infrastructure</span> →
+    <span style="color:#f97316;">The problem (reactive)</span> →
+    <span style="color:#ef4444;">emergencyAPI.com activates (pre-warning)</span> →
+    <span style="color:#fbbf24;">The data (simple integration)</span> →
+    <span style="color:#4ade80;">National scale (your state too)</span>
+  </div>
+</div>
+
+</body>
+</html>

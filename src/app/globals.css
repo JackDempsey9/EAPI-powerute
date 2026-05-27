@@ -1,0 +1,21 @@
+@import 'mapbox-gl/dist/mapbox-gl.css';
+@import 'tailwindcss';
+
+@theme {
+  --color-navy-950: #0a0f1a;
+  --color-navy-900: #111827;
+  --color-navy-800: #1e2533;
+  --color-navy-700: #2d3748;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #0a0f1a;
+}
+
+/* Prevent Mapbox logo overlap issues */
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right {
+  z-index: 10;
+}
