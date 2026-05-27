@@ -48,4 +48,4 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Live URL
 
-Deployed at: *(add Vercel URL after first deploy)*
+Deployed at: https://eapi-sapn-showcase.vercel.app
