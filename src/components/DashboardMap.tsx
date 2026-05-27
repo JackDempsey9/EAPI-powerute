@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import type { Incident, Substation, TransmissionLine, Outage, ProximityAlert } from '@/lib/types'
 import { PoweredBy } from './PoweredBy'
@@ -41,6 +41,7 @@ export function DashboardMap({
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const readyRef = useRef(false)
+  const [mapLoaded, setMapLoaded] = useState(false)
 
   // ── Initialise map once ────────────────────────────────────────────────
   useEffect(() => {
@@ -208,6 +209,7 @@ export function DashboardMap({
       })
 
       readyRef.current = true
+      setMapLoaded(true)  // triggers data effects to re-run with latest data
     })
 
     mapRef.current = map
@@ -239,7 +241,7 @@ export function DashboardMap({
 
   // ── Update transmission lines ──────────────────────────────────────────
   useEffect(() => {
-    if (!readyRef.current || !mapRef.current) return
+    if (!mapLoaded || !mapRef.current) return
     const source = mapRef.current.getSource('transmission-lines') as mapboxgl.GeoJSONSource
     if (!source) return
     source.setData({
@@ -250,11 +252,11 @@ export function DashboardMap({
         geometry: { type: 'LineString', coordinates: l.coordinates },
       })),
     })
-  }, [transmissionLines])
+  }, [transmissionLines, mapLoaded])
 
   // ── Update substations ─────────────────────────────────────────────────
   useEffect(() => {
-    if (!readyRef.current || !mapRef.current) return
+    if (!mapLoaded || !mapRef.current) return
     const source = mapRef.current.getSource('substations') as mapboxgl.GeoJSONSource
     if (!source) return
     const atRiskIds = new Set(proximityAlerts.map((a) => a.substation.id))
@@ -273,11 +275,11 @@ export function DashboardMap({
         }
       }),
     })
-  }, [substations, proximityAlerts])
+  }, [substations, proximityAlerts, mapLoaded])
 
   // ── Update incidents ───────────────────────────────────────────────────
   useEffect(() => {
-    if (!readyRef.current || !mapRef.current) return
+    if (!mapLoaded || !mapRef.current) return
     const source = mapRef.current.getSource('incidents') as mapboxgl.GeoJSONSource
     if (!source) return
 
@@ -305,11 +307,11 @@ export function DashboardMap({
         }
       }),
     })
-  }, [incidents, proximityAlerts])
+  }, [incidents, proximityAlerts, mapLoaded])
 
   // ── Update proximity rings ─────────────────────────────────────────────
   useEffect(() => {
-    if (!readyRef.current || !mapRef.current) return
+    if (!mapLoaded || !mapRef.current) return
     const source = mapRef.current.getSource('proximity-rings') as mapboxgl.GeoJSONSource
     if (!source) return
     source.setData({
@@ -322,11 +324,11 @@ export function DashboardMap({
         )
       ),
     })
-  }, [proximityAlerts, makeCircle])
+  }, [proximityAlerts, makeCircle, mapLoaded])
 
   // ── Update outage zones ────────────────────────────────────────────────
   useEffect(() => {
-    if (!readyRef.current || !mapRef.current) return
+    if (!mapLoaded || !mapRef.current) return
     const source = mapRef.current.getSource('outages') as mapboxgl.GeoJSONSource
     if (!source) return
     source.setData({
@@ -337,7 +339,7 @@ export function DashboardMap({
         geometry: o.geometry,
       })),
     })
-  }, [outages])
+  }, [outages, mapLoaded])
 
   return (
     <div className="relative w-full h-full">
