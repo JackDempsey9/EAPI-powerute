@@ -53,5 +53,7 @@ REPO-POLICY.md
 # Superpowers plans/specs (may contain secrets from brainstorming sessions)
 docs/superpowers/
 
-# Claude Code
+# Claude Code / AI agent configs
 .claude/
+CLAUDE.md
+AGENTS.md
