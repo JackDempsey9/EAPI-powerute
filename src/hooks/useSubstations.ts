@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { fetchSubstations, fetchTransmissionLines } from '@/lib/geoscienceApi'
+import { fetchSAPNSubstations, fetchSAPNSubTransmissionLines } from '@/lib/sapnData'
+import { fetchTransmissionLines } from '@/lib/geoscienceApi'
 import type { Substation, TransmissionLine } from '@/lib/types'
 
 interface SubstationState {
@@ -22,11 +23,17 @@ export function useSubstations(): SubstationState {
   useEffect(() => {
     let cancelled = false
 
-    Promise.all([fetchSubstations(), fetchTransmissionLines()])
-      .then(([substations, transmissionLines]) => {
-        if (!cancelled) {
-          setState({ substations, transmissionLines, isLoading: false, error: null })
-        }
+    // Load SAPN zone substations (local GeoJSON , 330 authoritative SAPN sites)
+    // + ElectraNet HV transmission lines from Geoscience Australia (132kV/275kV backbone)
+    // + SAPN 66kV sub-transmission lines (local GeoJSON , distribution feeders)
+    Promise.all([
+      fetchSAPNSubstations(),
+      fetchTransmissionLines(),
+      fetchSAPNSubTransmissionLines(),
+    ])
+      .then(([substations, electraNetLines, sapnLines]) => {
+        const transmissionLines = [...electraNetLines, ...sapnLines]
+        if (!cancelled) setState({ substations, transmissionLines, isLoading: false, error: null })
       })
       .catch((err) => {
         if (!cancelled) {

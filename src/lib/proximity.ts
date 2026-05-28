@@ -1,7 +1,7 @@
 import type { Incident, Substation, ProximityAlert, KPIData } from './types'
 
 /**
- * Haversine formula — great-circle distance between two points in km.
+ * Haversine formula , great-circle distance between two points in km.
  * @param a [lng, lat]
  * @param b [lng, lat]
  */
@@ -74,21 +74,20 @@ export function getKPIData(
       ? Math.min(...proximityAlerts.map((a) => a.distanceKm))
       : null
 
-  const hasCFSEmergency = incidents.some(
-    (i) => i.type === 'Bushfire' && i.status === 'Emergency Warning'
+  const fireTypes = new Set(['Bushfire', 'Structure Fire'])
+  const hasFireEmergency = incidents.some(
+    (i) => fireTypes.has(i.type) && i.status === 'Emergency Warning'
   )
-  const hasCFSWatchAct = incidents.some(
-    (i) => i.type === 'Bushfire' && i.status === 'Watch and Act'
+  const hasFireWatchAct = incidents.some(
+    (i) => fireTypes.has(i.type) && i.status === 'Watch and Act'
   )
-  const hasBushfire = incidents.some((i) => i.type === 'Bushfire')
+  const hasFireIncident = incidents.some((i) => fireTypes.has(i.type))
 
-  const fireDangerLevel: KPIData['fireDangerLevel'] = hasCFSEmergency
+  const fireDangerLevel: KPIData['fireDangerLevel'] = hasFireEmergency
     ? 'Extreme'
-    : hasCFSWatchAct
+    : hasFireWatchAct
     ? 'High'
-    : hasBushfire
-    ? 'Moderate'
-    : incidents.length > 0
+    : hasFireIncident
     ? 'Moderate'
     : 'None'
 
@@ -102,12 +101,18 @@ export function getKPIData(
   }
 }
 
-/** Proximity threshold in km by incident type */
+/**
+ * Proximity threshold in km per incident type , how close an incident needs
+ * to be to a substation before it triggers an alert and draws a ring on the map.
+ */
 export const PROXIMITY_THRESHOLDS: Record<string, number> = {
-  Bushfire: 5,
-  Storm: 10,
-  Flood: 8,
-  Accident: 2,
-  Rescue: 3,
-  Other: 5,
+  'Bushfire':        5.0,    // 5 km  , fire front can travel kilometres quickly
+  'Structure Fire':  0.25,   // 250 m , building fire, localised
+  'Storm':           5.0,    // 5 km  , wind/debris/trees down over wide area
+  Flood:    5.0,    // 5 km  , flood corridors can be broad
+  Accident: 0.25,   // 250 m , road incident, very localised
+  Rescue:   0.15,   // 150 m , road crash rescue, search ops
+  Medical:  0.15,   // 150 m , SAAS-PAGER ambulance callouts, street-level
+  Alarm:    0.15,   // 150 m , MFS fire alarms, building-level
+  Other:    0.15,   // 150 m
 }

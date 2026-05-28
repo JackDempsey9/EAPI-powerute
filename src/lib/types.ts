@@ -2,10 +2,13 @@
 
 export type IncidentType =
   | 'Bushfire'
+  | 'Structure Fire'
   | 'Storm'
   | 'Flood'
   | 'Accident'
   | 'Rescue'
+  | 'Medical'
+  | 'Alarm'
   | 'Other'
 
 export type IncidentStatus =
@@ -16,15 +19,26 @@ export type IncidentStatus =
   | 'Not Applicable'
 
 export interface Incident {
+  // Core (always present)
   id: string
   type: IncidentType
   status: IncidentStatus
   title: string
-  location: string
+  location: string          // formatted address
   state: string
-  source: string        // CFS, SES, MFS, etc.
-  updatedAt: string     // ISO 8601
+  source: string            // agency name (CFS, MFS, SAAS, etc.)
+  updatedAt: string         // ISO 8601
   coordinates: [number, number]  // [lng, lat]
+
+  // Extended (populated from API where available)
+  suburb?: string           // location.suburb
+  feedId?: string           // source.feedId (sa-cfs, sa-mfs, etc.)
+  severity?: string         // Minor / Moderate / Severe / Extreme
+  urgency?: string          // Immediate / Expected / Future / Past
+  certainty?: string        // Observed / Likely / Possible / Unlikely
+  resources?: number        // ground resources deployed
+  aircraft?: number         // aircraft deployed
+  reportedAt?: string       // ISO 8601 , when first reported
   link?: string
 }
 
@@ -40,6 +54,7 @@ export interface Substation {
 
 export interface TransmissionLine {
   id: string
+  name?: string
   coordinates: [number, number][]  // [lng, lat] points along line
   voltage?: string
   operator?: string
@@ -85,6 +100,27 @@ export interface KPIData {
   nearestIncidentKm: number | null
   lastUpdated: Date | null
   isConnected: boolean
+}
+
+// ─── Dashboard Settings ──────────────────────────────────────────────────
+
+export const ALL_INCIDENT_TYPES: IncidentType[] = [
+  'Bushfire', 'Structure Fire', 'Storm', 'Flood',
+  'Accident', 'Rescue', 'Medical', 'Alarm', 'Other',
+]
+
+export interface DashboardSettings {
+  visibleTypes: Record<string, boolean>
+  notifyWhenHidden: Record<string, boolean>
+  customRadii: Record<string, number>
+  showSubstations: boolean
+  showTransmissionLines: boolean
+  showSAPNLines: boolean
+  showDistributionFeeders: boolean
+  showLVNetwork: boolean
+  showPoles: boolean
+  showProximityRings: boolean
+  showGenerationMix: boolean
 }
 
 // ─── Geoscience Australia REST response ───────────────────────────────────

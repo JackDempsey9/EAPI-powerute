@@ -5,7 +5,7 @@ import type { Outage } from './types'
  * The proxy at /api/proxy/outages spoofs User-Agent + Referer to
  * bypass the WAF on SAPN's public outage map endpoints.
  *
- * Returns [] gracefully if proxy is unavailable — dashboard degrades
+ * Returns [] gracefully if proxy is unavailable , dashboard degrades
  * without the outage layer, all other layers continue normally.
  *
  * See docs/SAPN-OUTAGE-PROXY.md for the full pattern explanation.
@@ -18,14 +18,14 @@ export async function fetchOutages(): Promise<Outage[]> {
     })
 
     if (!res.ok) {
-      console.warn(`[sapnOutage] Proxy returned ${res.status} — outage layer disabled`)
+      console.warn(`[sapnOutage] Proxy returned ${res.status} , outage layer disabled`)
       return []
     }
 
     const data = await res.json()
     return Array.isArray(data) ? data : []
   } catch (err) {
-    console.info('[sapnOutage] Outage proxy unavailable — outage layer disabled:', err)
+    console.info('[sapnOutage] Outage proxy unavailable , outage layer disabled:', err)
     return []
   }
 }

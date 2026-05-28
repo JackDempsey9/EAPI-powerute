@@ -1,21 +1,14 @@
+import {
+  Flame, Building2, CloudLightning, Waves, Car,
+  LifeBuoy, HeartPulse, BellRing, AlertTriangle, Zap,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { Incident, ProximityAlert } from '@/lib/types'
+import { INCIDENT_META, DEFAULT_META } from '@/lib/incidentMeta'
 
-const TYPE_COLOURS: Record<string, string> = {
-  Bushfire: 'text-red-400 border-red-800 bg-red-950/50',
-  Storm:    'text-orange-400 border-orange-800 bg-orange-950/30',
-  Flood:    'text-yellow-400 border-yellow-800 bg-yellow-950/30',
-  Accident: 'text-blue-400 border-blue-800 bg-blue-950/30',
-  Rescue:   'text-purple-400 border-purple-800 bg-purple-950/30',
-  Other:    'text-slate-400 border-slate-700 bg-slate-900/50',
-}
-
-const TYPE_ICONS: Record<string, string> = {
-  Bushfire: '🔥',
-  Storm:    '⚡',
-  Flood:    '🌊',
-  Accident: '🚗',
-  Rescue:   '🚁',
-  Other:    '⚠️',
+const ICON_MAP: Record<string, LucideIcon> = {
+  Flame, Building2, CloudLightning, Waves, Car,
+  LifeBuoy, HeartPulse, BellRing, AlertTriangle,
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -29,11 +22,12 @@ const STATUS_BADGE: Record<string, string> = {
 interface IncidentCardProps {
   incident: Incident
   alert?: ProximityAlert
+  onSelect: (incident: Incident) => void
 }
 
-export function IncidentCard({ incident, alert }: IncidentCardProps) {
-  const colourClass = TYPE_COLOURS[incident.type] ?? TYPE_COLOURS.Other
-  const icon = TYPE_ICONS[incident.type] ?? '⚠️'
+export function IncidentCard({ incident, alert, onSelect }: IncidentCardProps) {
+  const meta = INCIDENT_META[incident.type] ?? DEFAULT_META
+  const Icon = ICON_MAP[meta.icon] ?? AlertTriangle
   const badgeClass = STATUS_BADGE[incident.status] ?? STATUS_BADGE['Not Applicable']
 
   const timeAgo = (() => {
@@ -45,31 +39,39 @@ export function IncidentCard({ incident, alert }: IncidentCardProps) {
   })()
 
   return (
-    <div className={`rounded-lg border p-3 mb-2 ${colourClass}`}>
+    <button
+      onClick={() => onSelect(incident)}
+      className={`w-full text-left rounded-lg border p-3 mb-2 cursor-pointer transition-all duration-150 hover:brightness-125 active:scale-[0.98] ${meta.tailwindBorder} ${meta.tailwindBg}`}
+    >
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="flex items-center gap-1.5">
-          <span className="text-base leading-none">{icon}</span>
-          <span className="text-xs font-bold uppercase tracking-wide">{incident.type}</span>
+          <Icon size={14} color={meta.hex} strokeWidth={2.5} />
+          <span className={`text-xs font-bold uppercase tracking-wide ${meta.tailwindText}`}>{incident.type}</span>
         </div>
-        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${badgeClass}`}>
+        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium whitespace-nowrap ${badgeClass}`}>
           {incident.status}
         </span>
       </div>
 
-      <div className="text-sm font-semibold text-slate-200 mb-0.5 leading-snug">
+      <div className="text-sm font-semibold text-slate-100 mb-0.5 leading-snug">
         {incident.title}
       </div>
 
+      {incident.location ? (
+        <div className="text-xs text-slate-300 mb-1 truncate">{incident.location}</div>
+      ) : null}
+
       {alert && (
-        <div className="text-xs text-orange-400 font-medium mb-1">
-          ⚡ {alert.distanceKm.toFixed(1)}km from {alert.substation.name}
+        <div className="flex items-center gap-1 text-xs text-orange-300 font-medium mb-1">
+          <Zap size={11} strokeWidth={2.5} />
+          {alert.distanceKm.toFixed(1)}km from {alert.substation.name}
         </div>
       )}
 
-      <div className="flex justify-between items-center mt-1.5">
-        <span className="text-[10px] text-slate-500 font-mono">{incident.source}</span>
-        <span className="text-[10px] text-slate-500">{timeAgo}</span>
+      <div className="flex justify-between items-center mt-1.5 border-t border-white/5 pt-1.5">
+        <span className="text-[10px] text-slate-400 font-mono">{incident.source}</span>
+        <span className="text-[10px] text-slate-400">{timeAgo}</span>
       </div>
-    </div>
+    </button>
   )
 }

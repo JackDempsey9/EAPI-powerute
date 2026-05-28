@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { fetchOutages } from '@/lib/sapnOutage'
 import type { Outage } from '@/lib/types'
 
-const POLL_INTERVAL_MS = 5 * 60_000  // 5 minutes — outages change slowly
+const POLL_INTERVAL_MS = 5 * 60_000  // 5 minutes , outages change slowly
 
 interface OutageState {
   outages: Outage[]

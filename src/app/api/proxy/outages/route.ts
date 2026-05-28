@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { Outage } from '@/lib/types'
 
-// ⚠️  Owner to replace these with real URLs from DevTools discovery
+// Owner to replace these with real URLs from DevTools discovery
 // See docs/SAPN-OUTAGE-PROXY.md for discovery instructions
 const CURRENT_URL = 'https://www.sapowernetworks.com.au/api/outages/GetCurrentOutages/'
 const PLANNED_URL = 'https://www.sapowernetworks.com.au/api/outages/GetPlannedOutages/'
@@ -12,7 +12,7 @@ const SPOOF_HEADERS = {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   Accept: 'application/json, text/javascript, */*; q=0.01',
   'Accept-Language': 'en-AU,en;q=0.9',
-  // ⚠️  This is the most critical header — must match the exact Referer the browser sends
+  // Critical header. Must match the exact Referer the browser sends
   Referer: 'https://www.sapowernetworks.com.au/power-outages/current-outages/',
   'X-Requested-With': 'XMLHttpRequest',
 }
@@ -84,9 +84,9 @@ export async function GET() {
 
       const text = await settled.value.text()
 
-      // WAF blocked us — returned HTML instead of JSON
+      // WAF blocked us , returned HTML instead of JSON
       if (text.trimStart().startsWith('<')) {
-        console.warn('[proxy/outages] WAF blocked request — check Referer header')
+        console.warn('[proxy/outages] WAF blocked request , check Referer header')
         continue
       }
 

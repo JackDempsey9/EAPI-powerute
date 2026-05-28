@@ -29,20 +29,46 @@ const mockFeature: GeoJSON.Feature = {
 }
 
 describe('categoriseIncidentType', () => {
-  it('maps Fire to Bushfire', () => {
-    expect(categoriseIncidentType('Fire')).toBe('Bushfire')
-  })
+  // Exact API values (snake_case as returned by emergencyapi.com/api/v1/incidents)
   it('maps bushfire to Bushfire', () => {
     expect(categoriseIncidentType('bushfire')).toBe('Bushfire')
   })
-  it('maps Thunderstorm to Storm', () => {
+  it('maps storm to Storm', () => {
+    expect(categoriseIncidentType('storm')).toBe('Storm')
+  })
+  it('maps flood to Flood', () => {
+    expect(categoriseIncidentType('flood')).toBe('Flood')
+  })
+  it('maps vehicle_accident to Accident (exact API value)', () => {
+    expect(categoriseIncidentType('vehicle_accident')).toBe('Accident')
+  })
+  // Fuzzy fallbacks for future/unanticipated values
+  it('maps Thunderstorm (fuzzy) to Storm', () => {
     expect(categoriseIncidentType('Thunderstorm')).toBe('Storm')
   })
-  it('maps Flood to Flood', () => {
-    expect(categoriseIncidentType('Flood')).toBe('Flood')
+  it('maps rescue to Rescue', () => {
+    expect(categoriseIncidentType('rescue')).toBe('Rescue')
   })
   it('maps vehicle_accident to Accident', () => {
     expect(categoriseIncidentType('vehicle_accident')).toBe('Accident')
+  })
+  it('maps medical to Medical', () => {
+    expect(categoriseIncidentType('medical')).toBe('Medical')
+  })
+  it('maps structure_fire to Structure Fire', () => {
+    expect(categoriseIncidentType('structure_fire')).toBe('Structure Fire')
+  })
+  it('maps alarm to Alarm (alarm category per /v1/schema)', () => {
+    expect(categoriseIncidentType('alarm')).toBe('Alarm')
+  })
+  it('maps burn_off to Bushfire (fire category)', () => {
+    expect(categoriseIncidentType('burn_off')).toBe('Bushfire')
+  })
+  it('maps vehicle_fire to Bushfire (fire category)', () => {
+    expect(categoriseIncidentType('vehicle_fire')).toBe('Bushfire')
+  })
+  it('maps grass_fire to Bushfire (fire category)', () => {
+    expect(categoriseIncidentType('grass_fire')).toBe('Bushfire')
   })
   it('maps unknown to Other', () => {
     expect(categoriseIncidentType('SomethingElse')).toBe('Other')

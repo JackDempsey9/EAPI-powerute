@@ -19,3 +19,46 @@ html, body {
 .mapboxgl-ctrl-bottom-right {
   z-index: 10;
 }
+
+/* ── Dark Mapbox popup ──────────────────────────────────────────────────────
+   Mapbox injects its own stylesheet that can win specificity races.
+   We use a className on the Popup instance ("incident-popup") so we can
+   target it with a chained selector that is guaranteed to outrank the default.
+   The inner .popup-inner div also sets background via inline style as a
+   belt-and-braces fallback (see DashboardMap.tsx setHTML).
+*/
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.incident-popup .mapboxgl-popup-content {
+  background: #1e2533 !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.25) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7) !important;
+  padding: 0 !important;        /* inner div handles padding */
+}
+.incident-popup.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+  border-top-color: #1e2533 !important;
+}
+.incident-popup.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
+  border-bottom-color: #1e2533 !important;
+}
+.incident-popup.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+  border-right-color: #1e2533 !important;
+}
+.incident-popup.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+  border-left-color: #1e2533 !important;
+}
+.incident-popup .mapboxgl-popup-close-button {
+  color: #94a3b8 !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  padding: 6px 8px !important;
+}
+.incident-popup .mapboxgl-popup-close-button:hover {
+  color: #f1f5f9 !important;
+  background: transparent !important;
+}

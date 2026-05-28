@@ -1,46 +1,70 @@
-# EmergencyAPI Power Utility Showcase
+# Emergency Infrastructure Dashboard
 
-A live, screen-recordable web dashboard that showcases [emergencyAPI.com](https://emergencyapi.com) as supplementary real-time emergency data for Australian power utilities.
+A real-time emergency operations dashboard for South Australian power infrastructure. Overlays live emergency incident data from [emergencyAPI.com](https://emergencyapi.com) onto SA Power Networks and ElectraNet infrastructure maps.
 
-Built to demonstrate how utilities can integrate emergencyAPI.com into their existing operational platforms — showing live incidents (bushfires, storms, floods, accidents) overlaid on real South Australian electricity infrastructure.
+Built to demonstrate how Australian power utilities can integrate real-time emergency intelligence into their existing operational systems.
 
-## What This Is
+## What it does
 
-A **War Room**-style operations dashboard running in the browser, populated with:
+- Live emergency incidents from 30+ Australian emergency feeds (CFS, MFS, SES, SAAS and more) via emergencyAPI.com
+- 330 SA Power Networks zone substations with GIS-precise coordinates
+- ElectraNet 132-275kV transmission network with animated current-flow visualisation
+- SAPN 66kV sub-transmission feeders (164 lines)
+- SAPN 11kV/19kV distribution network (87,000+ feeder segments)
+- SAPN 433V/240V low-voltage network and pole locations
+- Proximity detection: identifies when incidents are near power infrastructure
+- Real-time SA generation mix from AEMO NEM data (Open Electricity API)
+- Infrastructure warning system: timed alerts when emergencies threaten assets
+- Configurable layer visibility, custom proximity radii, per-type notification controls
 
-- 🔴 **Live emergency incidents** from emergencyAPI.com (CFS, SES, MFS feeds)
-- 🏗️ **Real SA substations & transmission lines** from Geoscience Australia
-- ⚡ **SAPN outage data** (current outages across SA)
-- 📍 **Proximity alerts** — incidents within configurable distance of infrastructure
+## Stack
 
-Designed to be screen-recorded for a YouTube showcase video.
+- Next.js 15 (App Router)
+- Mapbox GL JS
+- Tailwind CSS
+- TypeScript
+- Deployed to Vercel
 
-## Quick Start
+## Data sources
+
+| Source | Data | Access |
+|---|---|---|
+| [emergencyAPI.com](https://emergencyapi.com) | Live emergency incidents across Australia | API key (free tier available) |
+| [Geoscience Australia](https://services.ga.gov.au) | ElectraNet transmission infrastructure | Public REST MapServer |
+| SA Power Networks DAPR | Zone substations, sub-transmission lines, distribution feeders | Public data via Rosetta Analytics |
+| [BYDA](https://byda.maps.arcgis.com) | LV network, poles | Public ArcGIS Feature Service |
+| [Open Electricity](https://openelectricity.org.au) | Real-time generation mix (AEMO NEM) | Public API |
+
+## Setup
 
 ```bash
 npm install
 cp .env.example .env.local
-# Fill in API keys — see docs/SECRETS.md
+# Add your API keys to .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Required environment variables:
 
-## Docs
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_EMERGENCY_API_KEY` | emergencyAPI.com API key |
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | Mapbox GL JS access token |
 
-| File | Contents |
-|------|----------|
-| [docs/GOAL.md](docs/GOAL.md) | Product vision, target audience, success criteria |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Tech stack, component structure, data flow |
-| [docs/DATA-SOURCES.md](docs/DATA-SOURCES.md) | All APIs, endpoints, formats, rate limits |
-| [docs/DESIGN.md](docs/DESIGN.md) | UI layout, visual design, War Room spec |
-| [docs/SETUP.md](docs/SETUP.md) | Installation, environment, deployment |
-| [docs/SECRETS.md](docs/SECRETS.md) | API keys needed and where to get them |
-| [docs/SHOWCASE.md](docs/SHOWCASE.md) | What to demonstrate, key features, video plan |
+## Infrastructure data
 
-## Tech Stack
+GeoJSON files in `public/data/` are tracked with Git LFS. After cloning, run:
 
-- **Framework:** Next.js 15 (App Router)
-- **Map:** Mapbox GL JS
-- **Styling:** Tailwind CSS
-- **Data:** emergencyAPI.com · Geoscience Australia · SAPN outage feed
+```bash
+git lfs pull
+```
+
+To refresh the BYDA LV network and poles data:
+
+```bash
+node scripts/download-byda.mjs
+```
+
+## Licence
+
+This project is a showcase for emergencyAPI.com. The infrastructure GeoJSON data is derived from publicly accessible Australian government and utility data sources.
