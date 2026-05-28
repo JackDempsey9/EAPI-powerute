@@ -50,5 +50,8 @@ REPO-POLICY.md
 # SAPN raw data dumps (proprietary, not for public distribution)
 2021-2022 Zone substation data*/
 
+# Superpowers plans/specs (may contain secrets from brainstorming sessions)
+docs/superpowers/
+
 # Claude Code
 .claude/
