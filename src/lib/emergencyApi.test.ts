@@ -70,6 +70,9 @@ describe('categoriseIncidentType', () => {
   it('maps grass_fire to Bushfire (fire category)', () => {
     expect(categoriseIncidentType('grass_fire')).toBe('Bushfire')
   })
+  it('maps tree_down to Tree Down (hazard category)', () => {
+    expect(categoriseIncidentType('tree_down')).toBe('Tree Down')
+  })
   it('maps unknown to Other', () => {
     expect(categoriseIncidentType('SomethingElse')).toBe('Other')
   })

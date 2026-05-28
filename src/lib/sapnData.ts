@@ -87,6 +87,13 @@ export async function fetchSAPNPoles(): Promise<GeoJSON.FeatureCollection> {
   return res.json()
 }
 
+/** Load SAPN depot locations from local GeoJSON. */
+export async function fetchSAPNDepots(): Promise<GeoJSON.FeatureCollection> {
+  const res = await fetch('/data/sapn-depots.geojson')
+  if (!res.ok) throw new Error(`Failed to load SAPN depots: ${res.status}`)
+  return res.json()
+}
+
 /** Parse voltage kV from a SAPN name like "Burnside 66/11kV" → "66" */
 function extractVoltage(name: string): string | undefined {
   const m = name.match(/(\d+)\/?\d*kV/)

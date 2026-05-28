@@ -3,16 +3,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { X, Zap } from 'lucide-react'
 import {
-  Flame, Building2, CloudLightning, Waves, Car,
-  LifeBuoy, HeartPulse, BellRing, AlertTriangle,
+  Flame, Building2, CloudLightning, Waves, TriangleAlert,
+  LifeBuoy, Cross, BellRing, TreeDeciduous, CircleHelp,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { ProximityAlert } from '@/lib/types'
 import { INCIDENT_META, DEFAULT_META } from '@/lib/incidentMeta'
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  Flame, Building2, CloudLightning, Waves, Car,
-  LifeBuoy, HeartPulse, BellRing, AlertTriangle,
+  Flame, Building2, CloudLightning, Waves, TriangleAlert,
+  LifeBuoy, Cross, BellRing, TreeDeciduous, CircleHelp,
 }
 
 const DISMISS_MS = 5_000
@@ -70,43 +70,39 @@ export function ProximityWarnings({ proximityAlerts, onSelectIncident }: Proximi
     <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 pointer-events-none max-w-sm w-full px-4">
       {warnings.slice(0, 3).map((w) => {
         const meta = INCIDENT_META[w.alert.incident.type] ?? DEFAULT_META
-        const Icon = ICON_MAP[meta.icon] ?? AlertTriangle
+        const Icon = ICON_MAP[meta.icon] ?? CircleHelp
 
         return (
           <div
             key={w.key}
-            className="pointer-events-auto w-full rounded-lg border border-orange-700/60 bg-[#1a1208ee] backdrop-blur-sm shadow-lg shadow-black/40"
+            className="pointer-events-auto w-full border border-amber-700/60 bg-[#142420ee] cursor-pointer hover:border-amber-600 transition-colors"
             style={{ animation: 'slideDown 250ms ease-out' }}
+            onClick={() => { onSelectIncident(w.alert.incident); dismiss(w.key) }}
           >
-            <div className="flex items-start gap-3 p-3">
-              <div className="w-7 h-7 rounded flex items-center justify-center shrink-0 bg-orange-500/15">
+            <div className="flex items-start gap-3 p-3 overflow-hidden">
+              <div className="w-7 h-7 flex items-center justify-center shrink-0">
                 <Zap size={14} className="text-orange-400" />
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="text-[9px] font-bold uppercase tracking-wider text-orange-400 mb-1">
-                  Infrastructure warning
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <div className="text-[9px] font-semibold uppercase tracking-[0.15em] text-amber-400 mb-1 font-mono">
+                  INFRASTRUCTURE WARNING
                 </div>
 
-                <button
-                  onClick={() => { onSelectIncident(w.alert.incident); dismiss(w.key) }}
-                  className="text-left cursor-pointer group"
-                >
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <Icon size={11} color={meta.hex} strokeWidth={2.5} />
-                    <span className="text-[11px] font-semibold text-slate-100 truncate group-hover:underline">
-                      {w.alert.incident.title}
-                    </span>
-                  </div>
-                </button>
+                <div className="flex items-center gap-1.5 mb-0.5 min-w-0">
+                  <Icon size={11} color={meta.hex} strokeWidth={2.5} className="shrink-0" />
+                  <span className="text-[11px] font-semibold text-slate-100 truncate">
+                    {w.alert.incident.title}
+                  </span>
+                </div>
 
-                <div className="text-[10px] text-slate-300">
+                <div className="text-[10px] text-slate-300 truncate">
                   {w.alert.distanceKm.toFixed(1)} km from <span className="font-medium text-slate-100">{w.alert.substation.name}</span>
                 </div>
               </div>
 
               <button
-                onClick={() => dismiss(w.key)}
+                onClick={(e) => { e.stopPropagation(); dismiss(w.key) }}
                 className="shrink-0 text-slate-500 hover:text-slate-200 transition-colors cursor-pointer p-0.5"
                 aria-label="Dismiss warning"
               >

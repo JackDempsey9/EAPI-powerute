@@ -1,21 +1,23 @@
 # Emergency Infrastructure Dashboard
 
-A real-time emergency operations dashboard for South Australian power infrastructure. Overlays live emergency incident data from [emergencyAPI.com](https://emergencyapi.com) onto SA Power Networks and ElectraNet infrastructure maps.
-
-Built to demonstrate how Australian power utilities can integrate real-time emergency intelligence into their existing operational systems.
+Real-time emergency operations dashboard for South Australian power infrastructure. Overlays live emergency incident data from [emergencyAPI.com](https://emergencyapi.com) onto SA Power Networks and ElectraNet infrastructure maps. SCADA-style interface designed for operational use.
 
 ## What it does
 
-- Live emergency incidents from 30+ Australian emergency feeds (CFS, MFS, SES, SAAS and more) via emergencyAPI.com
+- Live emergency incidents from 30+ Australian emergency feeds via emergencyAPI.com
+- 10 incident types: Bushfire, Structure Fire, Storm, Flood, Accident, Rescue, Medical, Alarm, Tree Down, Other
 - 330 SA Power Networks zone substations with GIS-precise coordinates
-- ElectraNet 132-275kV transmission network with animated current-flow visualisation
+- 50 ElectraNet Transmission Connection Points
+- ElectraNet 132-275kV transmission network
 - SAPN 66kV sub-transmission feeders (164 lines)
 - SAPN 11kV/19kV distribution network (87,000+ feeder segments)
-- SAPN 433V/240V low-voltage network and pole locations
-- Proximity detection: identifies when incidents are near power infrastructure
+- SAPN 433V/240V low-voltage network and pole locations (partial dataset)
+- 31 SAPN crew depot locations across SA
+- Live SAPN outage data (current + planned, 300+ zones with affected customer counts)
+- Feeder impact detection: identifies which specific feeder is at risk when an incident is within 50m
 - Real-time SA generation mix from AEMO NEM data (Open Electricity API)
-- Infrastructure warning system: timed alerts when emergencies threaten assets
-- Configurable layer visibility, custom proximity radii, per-type notification controls
+- Infrastructure warning system with timed auto-dismiss alerts
+- Settings panel: layer toggles, custom proximity radii, per-type notification controls
 
 ## Stack
 
@@ -23,7 +25,7 @@ Built to demonstrate how Australian power utilities can integrate real-time emer
 - Mapbox GL JS
 - Tailwind CSS
 - TypeScript
-- Deployed to Vercel
+- IBM Plex Sans + JetBrains Mono
 
 ## Data sources
 
@@ -31,9 +33,10 @@ Built to demonstrate how Australian power utilities can integrate real-time emer
 |---|---|---|
 | [emergencyAPI.com](https://emergencyapi.com) | Live emergency incidents across Australia | API key (free tier available) |
 | [Geoscience Australia](https://services.ga.gov.au) | ElectraNet transmission infrastructure | Public REST MapServer |
-| SA Power Networks DAPR | Zone substations, sub-transmission lines, distribution feeders | Public data via Rosetta Analytics |
+| SA Power Networks DAPR | Zone substations, TCP substations, sub-transmission, distribution feeders | Public data via Rosetta Analytics |
 | [BYDA](https://byda.maps.arcgis.com) | LV network, poles | Public ArcGIS Feature Service |
 | [Open Electricity](https://openelectricity.org.au) | Real-time generation mix (AEMO NEM) | Public API |
+| SA Power Networks outage feed | Current and planned outages with polygon geometry | Server-side proxy |
 
 ## Setup
 
@@ -53,13 +56,13 @@ Required environment variables:
 
 ## Infrastructure data
 
-GeoJSON files in `public/data/` are tracked with Git LFS. After cloning, run:
+GeoJSON files in `public/data/` are tracked with Git LFS. After cloning:
 
 ```bash
 git lfs pull
 ```
 
-To refresh the BYDA LV network and poles data:
+To download additional BYDA LV network and poles data:
 
 ```bash
 node scripts/download-byda.mjs
@@ -67,4 +70,4 @@ node scripts/download-byda.mjs
 
 ## Licence
 
-This project is a showcase for emergencyAPI.com. The infrastructure GeoJSON data is derived from publicly accessible Australian government and utility data sources.
+Open source. Infrastructure GeoJSON data is derived from publicly accessible Australian government and utility data sources.

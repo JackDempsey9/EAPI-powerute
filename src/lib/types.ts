@@ -9,6 +9,7 @@ export type IncidentType =
   | 'Rescue'
   | 'Medical'
   | 'Alarm'
+  | 'Tree Down'
   | 'Other'
 
 export type IncidentStatus =
@@ -68,6 +69,8 @@ export interface Outage {
   geometry: GeoJSON.Geometry
   affectedCustomers?: number
   estimatedRestoration?: string
+  affectedSuburbs?: Array<{ name: string; postcode: string }>
+  reason?: string
 }
 
 // ─── Proximity (calculated client-side) ───────────────────────────────────
@@ -106,7 +109,7 @@ export interface KPIData {
 
 export const ALL_INCIDENT_TYPES: IncidentType[] = [
   'Bushfire', 'Structure Fire', 'Storm', 'Flood',
-  'Accident', 'Rescue', 'Medical', 'Alarm', 'Other',
+  'Accident', 'Rescue', 'Medical', 'Alarm', 'Tree Down', 'Other',
 ]
 
 export interface DashboardSettings {
@@ -119,7 +122,10 @@ export interface DashboardSettings {
   showDistributionFeeders: boolean
   showLVNetwork: boolean
   showPoles: boolean
+  showDepots: boolean
+  showOutages: boolean
   showProximityRings: boolean
+  showLineAnimation: boolean
   showGenerationMix: boolean
 }
 

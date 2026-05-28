@@ -6,7 +6,7 @@ const BASE_URL = 'https://emergencyapi.com/api/v1'
 
 // Maps every known eventType from /v1/schema to our IncidentType.
 // Respects the API's own eventCategories: fire, weather, rescue, hazmat,
-// medical, alarm, planned, earth, other.
+// medical, alarm, planned, earth, hazard, other.
 const EVENT_TYPE_MAP: Record<string, IncidentType> = {
   // fire category
   bushfire:         'Bushfire',
@@ -17,6 +17,8 @@ const EVENT_TYPE_MAP: Record<string, IncidentType> = {
   structure_fire:   'Structure Fire',
   // alarm category
   alarm:            'Alarm',
+  // hazard category
+  tree_down:        'Tree Down',
   // weather category
   storm:            'Storm',
   thunderstorm:     'Storm',
@@ -43,6 +45,7 @@ export function categoriseIncidentType(category: string): IncidentType {
   // Fuzzy fallbacks for future/unanticipated values
   if (c.includes('fire') || c.includes('burn')) return 'Bushfire'
   if (c.includes('alarm')) return 'Alarm'
+  if (c.includes('tree')) return 'Tree Down'
   if (c.includes('storm') || c.includes('thunder') || c.includes('wind') || c.includes('cyclone')) return 'Storm'
   if (c.includes('flood')) return 'Flood'
   if (c.includes('accident') || c.includes('crash')) return 'Accident'

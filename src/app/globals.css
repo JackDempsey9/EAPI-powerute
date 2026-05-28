@@ -2,63 +2,65 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-navy-950: #0a0f1a;
-  --color-navy-900: #111827;
-  --color-navy-800: #1e2533;
-  --color-navy-700: #2d3748;
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --color-scada-bg: #0a100e;
+  --color-scada-surface: #0f1a16;
+  --color-scada-panel: #142420;
+  --color-scada-border: #1e3530;
+  --color-scada-border-light: #2a4540;
+  --color-scada-text: #c8e6d0;
+  --color-scada-muted: #5a7a65;
+  --color-scada-dim: #3a5545;
+  --color-scada-green: #22c55e;
+  --color-scada-red: #ef4444;
+  --color-scada-amber: #f59e0b;
 }
 
 html, body {
   height: 100%;
   overflow: hidden;
-  background: #0a0f1a;
+  background: #0a100e;
 }
 
-/* Prevent Mapbox logo overlap issues */
 .mapboxgl-ctrl-bottom-left,
 .mapboxgl-ctrl-bottom-right {
   z-index: 10;
 }
 
-/* ── Dark Mapbox popup ──────────────────────────────────────────────────────
-   Mapbox injects its own stylesheet that can win specificity races.
-   We use a className on the Popup instance ("incident-popup") so we can
-   target it with a chained selector that is guaranteed to outrank the default.
-   The inner .popup-inner div also sets background via inline style as a
-   belt-and-braces fallback (see DashboardMap.tsx setHTML).
-*/
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* SCADA-style map popups: sharp corners, 1px border, no shadow blur */
 .incident-popup .mapboxgl-popup-content {
-  background: #1e2533 !important;
-  color: #e2e8f0 !important;
-  border: 1px solid rgba(148, 163, 184, 0.25) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7) !important;
-  padding: 0 !important;        /* inner div handles padding */
+  background: #142420 !important;
+  color: #c8e6d0 !important;
+  border: 1px solid #2a4540 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 .incident-popup.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
-  border-top-color: #1e2533 !important;
+  border-top-color: #142420 !important;
 }
 .incident-popup.mapboxgl-popup-anchor-top .mapboxgl-popup-tip {
-  border-bottom-color: #1e2533 !important;
+  border-bottom-color: #142420 !important;
 }
 .incident-popup.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
-  border-right-color: #1e2533 !important;
+  border-right-color: #142420 !important;
 }
 .incident-popup.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
-  border-left-color: #1e2533 !important;
+  border-left-color: #142420 !important;
 }
 .incident-popup .mapboxgl-popup-close-button {
-  color: #94a3b8 !important;
-  font-size: 18px !important;
+  color: #5a7a65 !important;
+  font-size: 16px !important;
   line-height: 1 !important;
-  padding: 6px 8px !important;
+  padding: 4px 6px !important;
 }
 .incident-popup .mapboxgl-popup-close-button:hover {
-  color: #f1f5f9 !important;
+  color: #c8e6d0 !important;
   background: transparent !important;
 }

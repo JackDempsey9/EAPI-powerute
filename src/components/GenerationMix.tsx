@@ -1,6 +1,5 @@
 'use client'
 
-import { Activity } from 'lucide-react'
 import type { GenerationMix as GenerationMixData } from '@/hooks/useGenerationMix'
 import { formatFueltech } from '@/hooks/useGenerationMix'
 
@@ -21,7 +20,7 @@ const FUEL_COLOURS: Record<string, string> = {
 }
 
 function getFuelColour(fueltech: string): string {
-  return FUEL_COLOURS[fueltech] ?? '#64748b'
+  return FUEL_COLOURS[fueltech] ?? '#3a5545'
 }
 
 interface GenerationMixProps {
@@ -35,15 +34,13 @@ export function GenerationMix({ data }: GenerationMixProps) {
   const barTotal = generating.reduce((sum, s) => sum + s.mw, 0)
 
   return (
-    <div className="absolute bottom-8 right-3 z-10 w-56 bg-[#111827ee] backdrop-blur-sm border border-slate-700/50 rounded-lg overflow-hidden">
-      <div className="px-3 py-2 border-b border-slate-700/40 flex items-center gap-2">
-        <Activity size={12} className="text-green-400" />
-        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">SA Generation</span>
-        <span className="text-[10px] font-semibold text-slate-200 ml-auto tabular-nums">{Math.round(data.totalMw)} MW</span>
+    <div className="absolute bottom-8 right-3 z-10 w-52 bg-[#0f1a16] border border-[#1e3530]">
+      <div className="px-2.5 py-1.5 border-b border-[#1e3530] flex items-center gap-2">
+        <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-[#5a7a65] font-mono">SA GENERATION</span>
+        <span className="text-[10px] font-semibold text-[#c8e6d0] ml-auto tabular-nums font-mono">{Math.round(data.totalMw)} MW</span>
       </div>
 
-      {/* Stacked bar */}
-      <div className="flex h-2 mx-3 mt-2 rounded-full overflow-hidden bg-slate-800">
+      <div className="flex h-1 mx-2.5 mt-2 overflow-hidden bg-[#1e3530]">
         {generating.map((s) => (
           <div
             key={s.fueltech}
@@ -55,23 +52,22 @@ export function GenerationMix({ data }: GenerationMixProps) {
         ))}
       </div>
 
-      {/* Legend */}
-      <div className="px-3 py-2 space-y-1">
+      <div className="px-2.5 py-1.5 space-y-0.5">
         {generating.slice(0, 6).map((s) => (
-          <div key={s.fueltech} className="flex items-center gap-2">
+          <div key={s.fueltech} className="flex items-center gap-1.5">
             <span
-              className="w-2 h-2 rounded-full shrink-0"
+              className="w-1.5 h-1.5 shrink-0"
               style={{ backgroundColor: getFuelColour(s.fueltech) }}
             />
-            <span className="text-[10px] text-slate-400 flex-1 truncate">{formatFueltech(s.fueltech)}</span>
-            <span className="text-[10px] text-slate-300 tabular-nums font-medium">{Math.round(s.mw)} MW</span>
+            <span className="text-[9px] text-[#5a7a65] flex-1 truncate font-mono uppercase">{formatFueltech(s.fueltech)}</span>
+            <span className="text-[9px] text-[#7a9a85] tabular-nums font-mono">{Math.round(s.mw)}</span>
           </div>
         ))}
       </div>
 
-      <div className="px-3 pb-2">
-        <div className="text-[9px] text-slate-600 text-center">
-          Open Electricity | AEMO NEM | 5 min interval
+      <div className="px-2.5 pb-1.5">
+        <div className="text-[8px] text-[#2a4540] font-mono uppercase tracking-wider">
+          AEMO NEM | 5MIN
         </div>
       </div>
     </div>

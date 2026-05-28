@@ -6,7 +6,9 @@ import { useEmergencyFeed } from '@/hooks/useEmergencyFeed'
 import { useSubstations } from '@/hooks/useSubstations'
 import { useOutages } from '@/hooks/useOutages'
 import { useGenerationMix } from '@/hooks/useGenerationMix'
+import { useFeederData } from '@/hooks/useFeederData'
 import { findProximityAlerts, getKPIData, PROXIMITY_THRESHOLDS } from '@/lib/proximity'
+import { detectFeederImpacts } from '@/lib/feederImpact'
 import type { Incident, ProximityAlert, DashboardSettings } from '@/lib/types'
 import { ALL_INCIDENT_TYPES } from '@/lib/types'
 import { KPIStrip } from './KPIStrip'
@@ -36,7 +38,10 @@ function buildDefaultSettings(): DashboardSettings {
     showDistributionFeeders: true,
     showLVNetwork: true,
     showPoles: true,
-    showProximityRings: true,
+    showDepots: true,
+    showOutages: true,
+    showProximityRings: false,
+    showLineAnimation: false,
     showGenerationMix: true,
   }
 }
@@ -46,6 +51,7 @@ export function Dashboard() {
   const infrastructure = useSubstations()
   const outageData = useOutages()
   const generation = useGenerationMix()
+  const feederData = useFeederData()
 
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null)
   const [settings, setSettings] = useState<DashboardSettings>(buildDefaultSettings)
@@ -89,13 +95,18 @@ export function Dashboard() {
     return proximityAlerts.filter((a) => settings.visibleTypes[a.incident.type] !== false)
   }, [proximityAlerts, settings.visibleTypes])
 
+  const feederImpacts = useMemo(
+    () => detectFeederImpacts(feed.incidents, feederData),
+    [feed.incidents, feederData]
+  )
+
   const kpi = useMemo(
     () => getKPIData(feed.incidents, proximityAlerts, feed.lastUpdated),
     [feed.incidents, proximityAlerts, feed.lastUpdated]
   )
 
   return (
-    <div className="flex flex-col h-screen bg-[#0a0f1a] text-slate-100">
+    <div className="flex flex-col h-screen bg-[#0a100e] text-[#c8e6d0]">
       <KPIStrip kpi={kpi} />
 
       <div className="flex flex-1 overflow-hidden">
@@ -108,6 +119,7 @@ export function Dashboard() {
             proximityAlerts={visibleAlerts}
             selectedIncident={selectedIncident}
             settings={settings}
+            onSelectIncident={handleSelectIncident}
           />
           <ProximityWarnings
             proximityAlerts={notifiableAlerts}
@@ -118,7 +130,7 @@ export function Dashboard() {
           {/* Settings toggle button */}
           <button
             onClick={() => setShowSettings((v) => !v)}
-            className={`absolute top-2 left-2 z-20 w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer ${showSettings ? 'bg-blue-600 text-white' : 'bg-[#111827cc] backdrop-blur-sm border border-slate-700/50 text-slate-400 hover:text-slate-200'}`}
+            className={`absolute top-2 left-2 z-20 w-8 h-8 flex items-center justify-center transition-colors cursor-pointer border ${showSettings ? 'bg-[#1e3530] border-[#2a4540] text-white' : 'bg-[#0f1a16] border-[#1e3530] text-[#5a7a65] hover:text-[#c8e6d0]'}`}
             aria-label="Toggle settings"
           >
             <Settings size={14} />
@@ -133,17 +145,20 @@ export function Dashboard() {
           )}
         </div>
 
-        <div className="w-80 flex-shrink-0 border-l border-slate-700/50 overflow-hidden flex flex-col bg-[#111827]">
+        <div className="w-80 flex-shrink-0 border-l border-[#1e3530] overflow-hidden flex flex-col bg-[#0f1a16]">
           {selectedIncident ? (
             <IncidentDetail
               incident={selectedIncident}
               alert={proximityAlerts.find((a) => a.incident.id === selectedIncident.id)}
+              feederImpact={feederImpacts.find((f) => f.incident.id === selectedIncident.id)}
               onClose={() => setSelectedIncident(null)}
             />
           ) : (
             <IncidentFeed
               incidents={visibleIncidents}
               proximityAlerts={visibleAlerts}
+              feederImpacts={feederImpacts}
+              outages={outageData.outages}
               isConnected={feed.isConnected}
               error={feed.error}
               onSelectIncident={handleSelectIncident}

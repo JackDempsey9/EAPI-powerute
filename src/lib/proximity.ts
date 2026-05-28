@@ -114,5 +114,6 @@ export const PROXIMITY_THRESHOLDS: Record<string, number> = {
   Rescue:   0.15,   // 150 m , road crash rescue, search ops
   Medical:  0.15,   // 150 m , SAAS-PAGER ambulance callouts, street-level
   Alarm:    0.15,   // 150 m , MFS fire alarms, building-level
+  'Tree Down': 0.05, // 50 m , tree on/near powerline, very localised direct contact
   Other:    0.15,   // 150 m
 }

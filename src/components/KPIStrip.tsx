@@ -1,17 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-  AlertCircle, Flame, Zap, Radar, Radio,
-} from 'lucide-react'
 import type { KPIData } from '@/lib/types'
 
-const FIRE_COLOURS: Record<KPIData['fireDangerLevel'], { text: string; bar: string; bg: string }> = {
-  Catastrophic: { text: 'text-red-300',    bar: 'bg-red-500',    bg: 'bg-red-500/10' },
-  Extreme:      { text: 'text-orange-300', bar: 'bg-orange-500', bg: 'bg-orange-500/10' },
-  High:         { text: 'text-yellow-300', bar: 'bg-yellow-500', bg: 'bg-yellow-500/10' },
-  Moderate:     { text: 'text-green-300',  bar: 'bg-green-500',  bg: 'bg-green-500/10' },
-  None:         { text: 'text-slate-400',  bar: 'bg-slate-600',  bg: 'bg-slate-600/10' },
+const FIRE_COLOURS: Record<KPIData['fireDangerLevel'], string> = {
+  Catastrophic: 'text-red-400',
+  Extreme:      'text-red-400',
+  High:         'text-amber-400',
+  Moderate:     'text-green-400',
+  None:         'text-[#5a7a65]',
 }
 
 const FIRE_LEVELS = ['None', 'Moderate', 'High', 'Extreme', 'Catastrophic'] as const
@@ -35,44 +32,38 @@ export function KPIStrip({ kpi }: KPIStripProps) {
   const isStale = secondsAgo !== null && secondsAgo > 120
 
   const updatedText = secondsAgo === null
-    ? 'Connecting...'
+    ? 'CONNECTING'
     : secondsAgo < 60
-    ? `${secondsAgo}s ago`
-    : `${Math.floor(secondsAgo / 60)}m ago`
+    ? `${secondsAgo}S AGO`
+    : `${Math.floor(secondsAgo / 60)}M AGO`
 
   const fireStyle = FIRE_COLOURS[kpi.fireDangerLevel]
   const fireLevelIdx = FIRE_LEVEL_INDEX[kpi.fireDangerLevel] ?? 0
 
   return (
-    <div className="flex h-[72px] border-b border-slate-700/50 gap-px bg-slate-800/30 flex-shrink-0">
+    <div className="flex h-14 border-b border-[#1e3530] flex-shrink-0 bg-[#0f1a16]">
       {/* Active Incidents */}
-      <div className="flex-1 flex items-center gap-3 px-4 bg-[#111827]">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${kpi.activeIncidents > 0 ? 'bg-red-500/15' : 'bg-slate-700/30'}`}>
-          <AlertCircle size={20} className={kpi.activeIncidents > 0 ? 'text-red-400' : 'text-slate-500'} />
-        </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-slate-400">Active Incidents</div>
-          <div className={`text-2xl font-bold tabular-nums leading-tight ${kpi.activeIncidents > 0 ? 'text-red-400' : 'text-slate-300'}`}>
+      <div className="flex-1 flex items-center gap-3 px-4 border-r border-[#1e3530]">
+        <div className="font-mono">
+          <div className="text-[9px] font-medium uppercase tracking-[0.15em] text-[#5a7a65]">INCIDENTS</div>
+          <div className={`text-xl font-semibold tabular-nums leading-tight font-mono ${kpi.activeIncidents > 0 ? 'text-red-400' : 'text-[#5a7a65]'}`}>
             {kpi.activeIncidents}
           </div>
         </div>
       </div>
 
-      {/* Fire Danger , segmented gauge */}
-      <div className="flex-1 flex items-center gap-3 px-4 bg-[#111827]">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${fireStyle.bg}`}>
-          <Flame size={20} className={fireStyle.text} />
-        </div>
+      {/* Fire Danger */}
+      <div className="flex-1 flex items-center gap-3 px-4 border-r border-[#1e3530]">
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] uppercase tracking-widest text-slate-400">Fire Danger</div>
-          <div className={`text-sm font-bold leading-tight mb-1 ${fireStyle.text}`}>
-            {kpi.fireDangerLevel}
+          <div className="text-[9px] font-medium uppercase tracking-[0.15em] text-[#5a7a65]">FIRE DANGER</div>
+          <div className={`text-sm font-semibold leading-tight mb-1 font-mono ${fireStyle}`}>
+            {kpi.fireDangerLevel.toUpperCase()}
           </div>
-          <div className="flex gap-0.5">
+          <div className="flex gap-px">
             {FIRE_LEVELS.slice(1).map((level, i) => (
               <div
                 key={level}
-                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < fireLevelIdx ? fireStyle.bar : 'bg-slate-700'}`}
+                className={`h-0.5 flex-1 transition-colors duration-300 ${i < fireLevelIdx ? (fireLevelIdx >= 3 ? 'bg-red-400' : fireLevelIdx >= 2 ? 'bg-amber-400' : 'bg-green-400') : 'bg-[#1e3530]'}`}
               />
             ))}
           </div>
@@ -80,48 +71,33 @@ export function KPIStrip({ kpi }: KPIStripProps) {
       </div>
 
       {/* Assets at Risk */}
-      <div className="flex-1 flex items-center gap-3 px-4 bg-[#111827]">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${kpi.assetsAtRisk > 0 ? 'bg-orange-500/15' : 'bg-slate-700/30'}`}>
-          <Zap size={20} className={kpi.assetsAtRisk > 0 ? 'text-orange-400' : 'text-slate-500'} />
-        </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-slate-400">Assets at Risk</div>
-          <div className={`text-2xl font-bold tabular-nums leading-tight ${kpi.assetsAtRisk > 0 ? 'text-orange-400' : 'text-slate-300'}`}>
+      <div className="flex-1 flex items-center gap-3 px-4 border-r border-[#1e3530]">
+        <div className="font-mono">
+          <div className="text-[9px] font-medium uppercase tracking-[0.15em] text-[#5a7a65]">ASSETS AT RISK</div>
+          <div className={`text-xl font-semibold tabular-nums leading-tight font-mono ${kpi.assetsAtRisk > 0 ? 'text-amber-400' : 'text-[#5a7a65]'}`}>
             {kpi.assetsAtRisk}
           </div>
-          {kpi.assetsAtRisk > 0 && (
-            <div className="text-[10px] text-orange-400/70">substations</div>
-          )}
         </div>
       </div>
 
       {/* Nearest Incident */}
-      <div className="flex-1 flex items-center gap-3 px-4 bg-[#111827]">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${kpi.nearestIncidentKm !== null && kpi.nearestIncidentKm < 5 ? 'bg-red-500/15' : 'bg-slate-700/30'}`}>
-          <Radar size={20} className={kpi.nearestIncidentKm !== null && kpi.nearestIncidentKm < 5 ? 'text-red-400' : 'text-slate-500'} />
-        </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-slate-400">Nearest Incident</div>
-          <div className={`text-2xl font-bold tabular-nums leading-tight ${kpi.nearestIncidentKm !== null && kpi.nearestIncidentKm < 5 ? 'text-red-400' : 'text-slate-300'}`}>
-            {kpi.nearestIncidentKm !== null ? `${kpi.nearestIncidentKm}` : '-'}
+      <div className="flex-1 flex items-center gap-3 px-4 border-r border-[#1e3530]">
+        <div className="font-mono">
+          <div className="text-[9px] font-medium uppercase tracking-[0.15em] text-[#5a7a65]">NEAREST THREAT</div>
+          <div className={`text-xl font-semibold tabular-nums leading-tight font-mono ${kpi.nearestIncidentKm !== null && kpi.nearestIncidentKm < 5 ? 'text-red-400' : 'text-[#5a7a65]'}`}>
+            {kpi.nearestIncidentKm !== null ? `${kpi.nearestIncidentKm} KM` : '-'}
           </div>
-          {kpi.nearestIncidentKm !== null && (
-            <div className="text-[10px] text-slate-500">km from infrastructure</div>
-          )}
         </div>
       </div>
 
-      {/* Live Feed Status */}
-      <div className="flex-1 flex items-center gap-3 px-4 bg-[#111827]">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${kpi.isConnected ? 'bg-green-500/15' : 'bg-red-500/15'}`}>
-          <Radio size={20} className={isStale ? 'text-yellow-400' : kpi.isConnected ? 'text-green-400' : 'text-red-400'} />
-        </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-slate-400">Live Feed</div>
-          <div className={`text-sm font-bold leading-tight ${isStale ? 'text-yellow-400' : kpi.isConnected ? 'text-green-400' : 'text-red-400'}`}>
-            {kpi.isConnected ? 'Connected' : 'Disconnected'}
+      {/* Feed Status */}
+      <div className="flex-1 flex items-center gap-3 px-4">
+        <div className="font-mono">
+          <div className="text-[9px] font-medium uppercase tracking-[0.15em] text-[#5a7a65]">FEED STATUS</div>
+          <div className={`text-sm font-semibold leading-tight font-mono ${isStale ? 'text-amber-400' : kpi.isConnected ? 'text-green-400' : 'text-red-400'}`}>
+            {kpi.isConnected ? 'ONLINE' : 'OFFLINE'}
           </div>
-          <div className="text-[10px] text-slate-500">{updatedText}</div>
+          <div className="text-[9px] text-[#5a7a65] font-mono">{updatedText}</div>
         </div>
       </div>
     </div>

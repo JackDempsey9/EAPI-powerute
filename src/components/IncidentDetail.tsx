@@ -1,12 +1,13 @@
 'use client'
 
 import {
-  Flame, Building2, CloudLightning, Waves, Car,
-  LifeBuoy, HeartPulse, BellRing, AlertTriangle, Zap,
+  Flame, Building2, CloudLightning, Waves, TriangleAlert,
+  LifeBuoy, Cross, BellRing, TreeDeciduous, CircleHelp, Zap,
   ArrowLeft, MapPin, Clock, Shield, ExternalLink,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Incident, ProximityAlert } from '@/lib/types'
+import type { FeederImpact } from '@/lib/feederImpact'
 import { INCIDENT_META, DEFAULT_META } from '@/lib/incidentMeta'
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -71,8 +72,8 @@ const STATUS_COLOURS: Record<string, string> = {
 }
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  Flame, Building2, CloudLightning, Waves, Car,
-  LifeBuoy, HeartPulse, BellRing, AlertTriangle,
+  Flame, Building2, CloudLightning, Waves, TriangleAlert,
+  LifeBuoy, Cross, BellRing, TreeDeciduous, CircleHelp,
 }
 
 // ── Main component ───────────────────────────────────────────────────────────
@@ -80,12 +81,13 @@ const ICON_MAP: Record<string, LucideIcon> = {
 interface IncidentDetailProps {
   incident: Incident
   alert?: ProximityAlert
+  feederImpact?: FeederImpact
   onClose: () => void
 }
 
-export function IncidentDetail({ incident, alert, onClose }: IncidentDetailProps) {
+export function IncidentDetail({ incident, alert, feederImpact, onClose }: IncidentDetailProps) {
   const meta = INCIDENT_META[incident.type] ?? DEFAULT_META
-  const Icon = ICON_MAP[meta.icon] ?? AlertTriangle
+  const Icon = ICON_MAP[meta.icon] ?? CircleHelp
   const color = meta.hex
   const badgeClass = STATUS_COLOURS[incident.status] ?? STATUS_COLOURS['Not Applicable']
 
@@ -175,22 +177,37 @@ export function IncidentDetail({ incident, alert, onClose }: IncidentDetailProps
         </div>
 
         {/* Infrastructure risk */}
-        {alert && (
+        {(alert || feederImpact) && (
           <div className="px-4 py-3 border-b border-slate-700/50">
             <SectionHeading>
               <span className="inline-flex items-center gap-1">
                 <Zap size={10} /> Infrastructure Risk
               </span>
             </SectionHeading>
-            <div className="flex items-start gap-2 py-1">
-              <Zap size={14} className="text-orange-400 mt-0.5 shrink-0" />
-              <div>
-                <div className="text-xs text-slate-200 font-medium">{alert.substation.name}</div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
-                  {alert.distanceKm.toFixed(2)} km from this incident
+
+            {feederImpact && (
+              <div className="flex items-start gap-2 py-1.5 mb-1">
+                <Zap size={14} className="text-red-400 mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-xs text-red-300 font-semibold">Feeder {feederImpact.feederId}</div>
+                  <div className="text-[10px] text-slate-300 mt-0.5">
+                    {feederImpact.voltage} {feederImpact.lineType} | {feederImpact.distanceM}m from incident
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {alert && (
+              <div className="flex items-start gap-2 py-1.5">
+                <Zap size={14} className="text-orange-400 mt-0.5 shrink-0" />
+                <div>
+                  <div className="text-xs text-slate-200 font-medium">{alert.substation.name}</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">
+                    {alert.distanceKm.toFixed(2)} km from this incident
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

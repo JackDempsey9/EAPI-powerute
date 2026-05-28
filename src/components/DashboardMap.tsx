@@ -5,7 +5,7 @@ import mapboxgl from 'mapbox-gl'
 import type { Incident, Substation, TransmissionLine, Outage, ProximityAlert, DashboardSettings } from '@/lib/types'
 import { PROXIMITY_THRESHOLDS } from '@/lib/proximity'
 import { INCIDENT_META, DEFAULT_META } from '@/lib/incidentMeta'
-import { fetchSAPNDistributionFeeders, fetchSAPNLVNetwork, fetchSAPNPoles } from '@/lib/sapnData'
+import { fetchSAPNDistributionFeeders, fetchSAPNLVNetwork, fetchSAPNPoles, fetchSAPNDepots } from '@/lib/sapnData'
 import { PoweredBy } from './PoweredBy'
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? ''
@@ -29,6 +29,7 @@ interface DashboardMapProps {
   proximityAlerts: ProximityAlert[]
   selectedIncident: Incident | null
   settings: DashboardSettings
+  onSelectIncident: (incident: Incident) => void
 }
 
 export function DashboardMap({
@@ -39,11 +40,16 @@ export function DashboardMap({
   proximityAlerts,
   selectedIncident,
   settings,
+  onSelectIncident,
 }: DashboardMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const readyRef = useRef(false)
   const animFrameRef = useRef<number>(0)
+  const incidentsRef = useRef<Incident[]>(incidents)
+  incidentsRef.current = incidents
+  const onSelectRef = useRef(onSelectIncident)
+  onSelectRef.current = onSelectIncident
   const [mapLoaded, setMapLoaded] = useState(false)
 
   // Pre-computed dasharray sequence , each step shifts the dash forward by 0.5 units,
@@ -64,8 +70,8 @@ export function DashboardMap({
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: 'mapbox://styles/mapbox/dark-v11',
-      center: [138.6, -34.9],
-      zoom: 6,
+      center: [138.6, -34.92],
+      zoom: 11,
       attributionControl: false,
     })
 
@@ -78,59 +84,60 @@ export function DashboardMap({
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
       })
+      // HV layers are context, dialled back visually
       map.addLayer({
         id: 'transmission-lines-layer',
         type: 'line',
         source: 'transmission-lines',
         filter: ['!=', ['get', 'operator'], 'SA Power Networks'],
-        paint: { 'line-color': '#1e40af', 'line-width': 2, 'line-opacity': 0.6 },
+        paint: { 'line-color': '#1e3a5f', 'line-width': 1.5, 'line-opacity': 0.35 },
       })
       map.addLayer({
         id: 'transmission-lines-glow',
         type: 'line',
         source: 'transmission-lines',
         filter: ['!=', ['get', 'operator'], 'SA Power Networks'],
-        paint: { 'line-color': '#3b82f6', 'line-width': 8, 'line-opacity': 0.1, 'line-blur': 5 },
+        paint: { 'line-color': '#1e40af', 'line-width': 6, 'line-opacity': 0.06, 'line-blur': 4 },
       })
-      // Animated current-flow dash , bright short pulses that travel along ElectraNet lines
       map.addLayer({
         id: 'transmission-lines-flow',
         type: 'line',
         source: 'transmission-lines',
         filter: ['!=', ['get', 'operator'], 'SA Power Networks'],
+        layout: { 'visibility': 'none' },
         paint: {
-          'line-color': '#93c5fd',   // blue-300, reads as "electric"
-          'line-width': 1.5,
-          'line-opacity': 0.9,
+          'line-color': '#60a5fa',
+          'line-width': 1,
+          'line-opacity': 0.5,
           'line-dasharray': [0, 4, 3],
         },
       })
 
-      // ── SAPN 66kV sub-transmission lines ──────────────────────────────
+      // SAPN 66kV sub-transmission, also context
       map.addLayer({
         id: 'sapn-subtrans-layer',
         type: 'line',
         source: 'transmission-lines',
         filter: ['==', ['get', 'operator'], 'SA Power Networks'],
-        paint: { 'line-color': '#d97706', 'line-width': 1.5, 'line-opacity': 0.5 },
+        paint: { 'line-color': '#92400e', 'line-width': 1, 'line-opacity': 0.3 },
       })
       map.addLayer({
         id: 'sapn-subtrans-glow',
         type: 'line',
         source: 'transmission-lines',
         filter: ['==', ['get', 'operator'], 'SA Power Networks'],
-        paint: { 'line-color': '#fbbf24', 'line-width': 6, 'line-opacity': 0.07, 'line-blur': 3 },
+        paint: { 'line-color': '#d97706', 'line-width': 4, 'line-opacity': 0.04, 'line-blur': 2 },
       })
-      // Animated flow on SAPN lines (amber pulses)
       map.addLayer({
         id: 'sapn-subtrans-flow',
         type: 'line',
         source: 'transmission-lines',
         filter: ['==', ['get', 'operator'], 'SA Power Networks'],
+        layout: { 'visibility': 'none' },
         paint: {
-          'line-color': '#fbbf24',
-          'line-width': 1,
-          'line-opacity': 0.7,
+          'line-color': '#d97706',
+          'line-width': 0.8,
+          'line-opacity': 0.4,
           'line-dasharray': [0, 4, 3],
         },
       })
@@ -144,23 +151,23 @@ export function DashboardMap({
         id: 'distribution-feeders-layer',
         type: 'line',
         source: 'distribution-feeders',
-        minzoom: 12,
+        minzoom: 10,
         paint: {
-          'line-color': '#6b7280',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 12, 0.5, 16, 1.5],
-          'line-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.3, 14, 0.5],
+          'line-color': '#ef4444',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 10, 0.8, 13, 1.5, 16, 2.5],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 10, 0.5, 13, 0.7],
         },
       })
       map.addLayer({
         id: 'distribution-feeders-glow',
         type: 'line',
         source: 'distribution-feeders',
-        minzoom: 14,
+        minzoom: 12,
         paint: {
-          'line-color': '#9ca3af',
-          'line-width': 4,
-          'line-opacity': 0.05,
-          'line-blur': 2,
+          'line-color': '#f87171',
+          'line-width': 6,
+          'line-opacity': 0.1,
+          'line-blur': 3,
         },
       })
 
@@ -180,11 +187,11 @@ export function DashboardMap({
         id: 'lv-lines-layer',
         type: 'line',
         source: 'lv-lines',
-        minzoom: 15,
+        minzoom: 14,
         paint: {
-          'line-color': '#475569',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 15, 0.5, 18, 1.2],
-          'line-opacity': 0.4,
+          'line-color': '#ef4444',
+          'line-width': ['interpolate', ['linear'], ['zoom'], 14, 1, 16, 2.5, 19, 5],
+          'line-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.5, 16, 0.75],
         },
       })
 
@@ -197,13 +204,13 @@ export function DashboardMap({
         id: 'poles-layer',
         type: 'circle',
         source: 'poles',
-        minzoom: 16,
+        minzoom: 14,
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['zoom'], 16, 1.5, 19, 4],
-          'circle-color': '#64748b',
-          'circle-stroke-width': 0.5,
-          'circle-stroke-color': '#94a3b8',
-          'circle-opacity': 0.6,
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 1.5, 16, 3, 19, 7],
+          'circle-color': '#ef4444',
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#fca5a5',
+          'circle-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.5, 16, 0.8],
         },
       })
 
@@ -271,6 +278,17 @@ export function DashboardMap({
       await Promise.all([
         loadIcon('substation-normal', '/icons/substation.svg'),
         loadIcon('substation-alert', '/icons/substation-alert.svg'),
+        loadIcon('depot-icon', '/icons/depot.svg'),
+        loadIcon('inc-Bushfire', '/icons/incident-flame.svg'),
+        loadIcon('inc-Structure Fire', '/icons/incident-structure-fire.svg'),
+        loadIcon('inc-Storm', '/icons/incident-storm.svg'),
+        loadIcon('inc-Flood', '/icons/incident-flood.svg'),
+        loadIcon('inc-Accident', '/icons/incident-accident.svg'),
+        loadIcon('inc-Rescue', '/icons/incident-rescue.svg'),
+        loadIcon('inc-Medical', '/icons/incident-medical.svg'),
+        loadIcon('inc-Alarm', '/icons/incident-alarm.svg'),
+        loadIcon('inc-Tree Down', '/icons/incident-tree-down.svg'),
+        loadIcon('inc-Other', '/icons/incident-other.svg'),
       ])
 
       map.addSource('substations', {
@@ -300,6 +318,59 @@ export function DashboardMap({
         },
       })
 
+      // ── Selected incident highlight ─────────────────────────────────
+      map.addSource('selected-incident', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      })
+      map.addLayer({
+        id: 'selected-incident-ring-outer',
+        type: 'circle',
+        source: 'selected-incident',
+        paint: {
+          'circle-radius': 35,
+          'circle-color': '#ffffff',
+          'circle-opacity': 0.08,
+          'circle-blur': 0.5,
+        },
+      })
+      map.addLayer({
+        id: 'selected-incident-ring',
+        type: 'circle',
+        source: 'selected-incident',
+        paint: {
+          'circle-radius': 22,
+          'circle-color': 'transparent',
+          'circle-stroke-width': 3,
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-opacity': 0.9,
+        },
+      })
+
+      // ── Depots ────────────────────────────────────────────────────
+      map.addSource('depots', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      })
+      map.addLayer({
+        id: 'depots-layer',
+        type: 'symbol',
+        source: 'depots',
+        layout: {
+          'icon-image': 'depot-icon',
+          'icon-size': ['interpolate', ['linear'], ['zoom'], 8, 0.35, 12, 0.6, 15, 0.85],
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+        },
+      })
+
+      fetchSAPNDepots()
+        .then((data) => {
+          const src = map.getSource('depots') as mapboxgl.GeoJSONSource
+          if (src) src.setData(data)
+        })
+        .catch((err) => console.warn('[DashboardMap] Depots unavailable:', err))
+
       // ── Incidents ──────────────────────────────────────────────────
       map.addSource('incidents', {
         type: 'geojson',
@@ -318,22 +389,21 @@ export function DashboardMap({
           'circle-blur': 0.5,
         },
       })
-      // Main marker
+      // Main marker (SVG icons per incident type)
       map.addLayer({
         id: 'incidents-dot',
-        type: 'circle',
+        type: 'symbol',
         source: 'incidents',
-        paint: {
-          'circle-radius': [
+        layout: {
+          'icon-image': ['concat', 'inc-', ['get', 'type']],
+          'icon-size': [
             'match', ['get', 'status'],
-            'Emergency Warning', 10,
-            'Watch and Act', 8,
-            6,
+            'Emergency Warning', 1.2,
+            'Watch and Act', 1.0,
+            0.85,
           ],
-          'circle-color': ['get', 'color'],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-opacity': 0.6,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
         },
       })
 
@@ -355,6 +425,8 @@ export function DashboardMap({
         'substations-dot', 'substations-glow',
         'distribution-feeders-layer',
         'lv-lines-layer', 'poles-layer',
+        'depots-layer',
+        'outages-fill',
         'transmission-lines-layer', 'transmission-lines-glow', 'transmission-lines-flow',
         'sapn-subtrans-layer', 'sapn-subtrans-glow',
       ]
@@ -409,6 +481,31 @@ export function DashboardMap({
             </div>`
         }
 
+        if (layerId === 'outages-fill') {
+          const customers = props.affectedCustomers ? `${props.affectedCustomers} CUSTOMERS` : ''
+          const restoration = props.estimatedRestoration
+            ? new Date(String(props.estimatedRestoration)).toLocaleString('en-AU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+            : ''
+          return `
+            <div style="padding:10px 14px;border-left:3px solid #f97316;">
+              <div style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#f97316;margin-bottom:3px;font-family:monospace;">${esc(props.status)}</div>
+              ${customers ? `<div style="font-size:11px;font-weight:600;color:#c8e6d0;margin-bottom:2px;">${customers}</div>` : ''}
+              ${props.suburbs ? `<div style="font-size:10px;color:#7a9a85;margin-bottom:2px;">${esc(props.suburbs)}</div>` : ''}
+              ${restoration ? `<div style="font-size:10px;color:#7a9a85;">EST: ${restoration}</div>` : ''}
+            </div>`
+        }
+
+        if (layerId === 'depots-layer') {
+          const depotType = String(props.type ?? 'depot')
+          const label = depotType === 'headquarters' ? 'HEADQUARTERS' : depotType === 'office' ? 'OFFICE' : 'CREW DEPOT'
+          return `
+            <div style="padding:10px 14px;border-left:3px solid #22d3ee;">
+              <div style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#22d3ee;margin-bottom:3px;">${label}</div>
+              <div style="font-size:12px;font-weight:600;color:#f1f5f9;margin-bottom:2px;">${esc(props.name)}</div>
+              ${props.address ? `<div style="font-size:10px;color:#94a3b8;">${esc(props.address)}</div>` : ''}
+            </div>`
+        }
+
         // Transmission / sub-transmission lines
         const operator = String(props.operator ?? '')
         const isElectraNet = operator !== 'SA Power Networks'
@@ -439,7 +536,7 @@ export function DashboardMap({
 
         if (cards.length === 0) return
 
-        const html = `<div style="background:#1e2533;border-radius:8px;font-family:system-ui,sans-serif;min-width:200px;overflow:hidden;display:flex;flex-direction:column;gap:1px;${isClick ? 'padding-right:24px;' : ''}">${cards.map(c => `<div style="background:#1e2533;">${c}</div>`).join('<div style="height:1px;background:rgba(148,163,184,0.12);margin:0 14px;"></div>')}</div>`
+        const html = `<div style="background:#142420;font-family:'IBM Plex Sans',system-ui,sans-serif;min-width:200px;overflow:hidden;display:flex;flex-direction:column;gap:1px;${isClick ? 'padding-right:24px;' : ''}">${cards.map(c => `<div style="background:#142420;">${c}</div>`).join('<div style="height:1px;background:#1e3530;margin:0 14px;"></div>')}</div>`
 
         if (isClick) {
           if (clickPopup) { clickPopup.remove(); clickPopup = null }
@@ -455,9 +552,18 @@ export function DashboardMap({
         }
       }
 
-      // Click on incidents
+      // Click on incidents opens the detail sidebar (same as clicking from the feed)
       map.on('click', 'incidents-dot', (e) => {
-        if (!e.features?.[0]) return
+        const feature = e.features?.[0]
+        if (!feature) return
+        const incidentId = feature.properties?.incidentId
+        if (incidentId) {
+          const incident = incidentsRef.current.find((i) => i.id === String(incidentId))
+          if (incident) {
+            onSelectRef.current(incident)
+            return
+          }
+        }
         showStackedPopup(e.lngLat, e.point, true)
       })
 
@@ -600,6 +706,7 @@ export function DashboardMap({
             title: inc.title,
             location: inc.location,
             source: inc.source,
+            incidentId: inc.id,
             color: INCIDENT_COLOURS[inc.type] ?? '#94a3b8',
             nearestSubstation: alert?.substation.name ?? null,
             distanceKm: alert ? alert.distanceKm.toFixed(1) : null,
@@ -636,7 +743,14 @@ export function DashboardMap({
       type: 'FeatureCollection',
       features: outages.map((o) => ({
         type: 'Feature',
-        properties: { status: o.status },
+        properties: {
+          outageId: o.id,
+          status: o.status,
+          affectedCustomers: o.affectedCustomers ?? null,
+          estimatedRestoration: o.estimatedRestoration ?? null,
+          reason: o.reason ?? null,
+          suburbs: o.affectedSuburbs?.map((s) => s.name).join(', ') ?? null,
+        },
         geometry: o.geometry,
       })),
     })
@@ -674,18 +788,48 @@ export function DashboardMap({
     const poleVis = vis(settings.showPoles !== false)
     if (map.getLayer('poles-layer')) map.setLayoutProperty('poles-layer', 'visibility', poleVis)
 
+    const outageVis = vis(settings.showOutages !== false)
+    for (const id of ['outages-fill', 'outages-stroke']) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', outageVis)
+    }
+
+    const depotVis = vis(settings.showDepots !== false)
+    if (map.getLayer('depots-layer')) map.setLayoutProperty('depots-layer', 'visibility', depotVis)
+
     const ringVis = vis(settings.showProximityRings)
     if (map.getLayer('proximity-rings-layer')) {
       map.setLayoutProperty('proximity-rings-layer', 'visibility', ringVis)
     }
-  }, [mapLoaded, settings.showTransmissionLines, settings.showSAPNLines, settings.showSubstations, settings.showDistributionFeeders, settings.showLVNetwork, settings.showPoles, settings.showProximityRings])
 
-  // ── Fly to selected incident ───────────────────────────────────────────
+    const animVis = vis(settings.showLineAnimation !== false && settings.showLineAnimation)
+    for (const id of ['transmission-lines-flow', 'sapn-subtrans-flow']) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', animVis)
+    }
+  }, [mapLoaded, settings.showTransmissionLines, settings.showSAPNLines, settings.showSubstations, settings.showDistributionFeeders, settings.showLVNetwork, settings.showPoles, settings.showDepots, settings.showOutages, settings.showProximityRings, settings.showLineAnimation])
+
+  // ── Fly to + highlight selected incident ────────────────────────────────
   useEffect(() => {
-    if (!selectedIncident || !mapRef.current || !mapLoaded) return
+    if (!mapRef.current || !mapLoaded) return
+    const source = mapRef.current.getSource('selected-incident') as mapboxgl.GeoJSONSource
+    if (!source) return
+
+    if (!selectedIncident) {
+      source.setData({ type: 'FeatureCollection', features: [] })
+      return
+    }
+
+    source.setData({
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        properties: {},
+        geometry: { type: 'Point', coordinates: selectedIncident.coordinates },
+      }],
+    })
+
     mapRef.current.flyTo({
       center: selectedIncident.coordinates,
-      zoom: 14,
+      zoom: 15,
       duration: 1800,
       essential: true,
     })

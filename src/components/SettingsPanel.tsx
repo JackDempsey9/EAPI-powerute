@@ -2,8 +2,8 @@
 
 import { X, Eye, EyeOff, Bell, BellOff, Layers } from 'lucide-react'
 import {
-  Flame, Building2, CloudLightning, Waves, Car,
-  LifeBuoy, HeartPulse, BellRing, AlertTriangle,
+  Flame, Building2, CloudLightning, Waves, TriangleAlert,
+  LifeBuoy, Cross, BellRing, TreeDeciduous, CircleHelp,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { DashboardSettings } from '@/lib/types'
@@ -11,8 +11,8 @@ import { ALL_INCIDENT_TYPES } from '@/lib/types'
 import { INCIDENT_META, DEFAULT_META } from '@/lib/incidentMeta'
 
 const ICON_MAP: Record<string, LucideIcon> = {
-  Flame, Building2, CloudLightning, Waves, Car,
-  LifeBuoy, HeartPulse, BellRing, AlertTriangle,
+  Flame, Building2, CloudLightning, Waves, TriangleAlert,
+  LifeBuoy, Cross, BellRing, TreeDeciduous, CircleHelp,
 }
 
 interface SettingsPanelProps {
@@ -90,7 +90,7 @@ export function SettingsPanel({ settings, onChange, onClose }: SettingsPanelProp
           <div className="space-y-1.5">
             {ALL_INCIDENT_TYPES.map((type) => {
               const meta = INCIDENT_META[type] ?? DEFAULT_META
-              const Icon = ICON_MAP[meta.icon] ?? AlertTriangle
+              const Icon = ICON_MAP[meta.icon] ?? CircleHelp
               const visible = settings.visibleTypes[type] !== false
               const notify = settings.notifyWhenHidden[type] !== false
 
@@ -198,10 +198,34 @@ export function SettingsPanel({ settings, onChange, onClose }: SettingsPanelProp
 
             <div className="flex items-center justify-between py-1">
               <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded bg-cyan-400" />
+                <span className="text-[11px] text-slate-300">Crew Depots</span>
+              </div>
+              <Toggle on={settings.showDepots !== false} onToggle={() => setFlag('showDepots', !(settings.showDepots !== false))} />
+            </div>
+
+            <div className="flex items-center justify-between py-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-orange-500" />
+                <span className="text-[11px] text-slate-300">Outage Zones</span>
+              </div>
+              <Toggle on={settings.showOutages !== false} onToggle={() => setFlag('showOutages', !(settings.showOutages !== false))} />
+            </div>
+
+            <div className="flex items-center justify-between py-1">
+              <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full border border-dashed border-orange-400" />
                 <span className="text-[11px] text-slate-300">Proximity Rings</span>
               </div>
               <Toggle on={settings.showProximityRings} onToggle={() => setFlag('showProximityRings', !settings.showProximityRings)} />
+            </div>
+
+            <div className="flex items-center justify-between py-1">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-0.5 rounded bg-blue-400 opacity-60" />
+                <span className="text-[11px] text-slate-300">Line Flow Animation</span>
+              </div>
+              <Toggle on={settings.showLineAnimation} onToggle={() => setFlag('showLineAnimation', !settings.showLineAnimation)} />
             </div>
           </div>
 

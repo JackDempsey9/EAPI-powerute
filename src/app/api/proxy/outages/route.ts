@@ -1,61 +1,70 @@
 import { NextResponse } from 'next/server'
 import type { Outage } from '@/lib/types'
 
-// Owner to replace these with real URLs from DevTools discovery
-// See docs/SAPN-OUTAGE-PROXY.md for discovery instructions
-const CURRENT_URL = 'https://www.sapowernetworks.com.au/api/outages/GetCurrentOutages/'
-const PLANNED_URL = 'https://www.sapowernetworks.com.au/api/outages/GetPlannedOutages/'
+const BASE = 'https://outage.apps.sapowernetworks.com.au/Outages'
+const CURRENT_URL = `${BASE}/GetPublicisedCurrentOutages/`
+const PLANNED_URL = `${BASE}/GetPublicisedPlannedOutages/`
 
-// Spoof browser headers to pass the WAF check
-const SPOOF_HEADERS = {
+const HEADERS = {
   'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
   Accept: 'application/json, text/javascript, */*; q=0.01',
   'Accept-Language': 'en-AU,en;q=0.9',
-  // Critical header. Must match the exact Referer the browser sends
-  Referer: 'https://www.sapowernetworks.com.au/power-outages/current-outages/',
+  Referer: 'https://outage.apps.sapowernetworks.com.au/OutageReport/OutageMap',
   'X-Requested-With': 'XMLHttpRequest',
 }
 
-function coordsToGeoJsonPolygon(
-  points: Array<{ lat: number; lng: number } | number[]>
-): [number, number][] {
-  const coords: [number, number][] = points.map((p) =>
-    Array.isArray(p)
-      ? [p[1], p[0]]               // [lat,lng] array → [lng,lat] GeoJSON
-      : [p.lng, p.lat]             // {lat,lng} object → [lng,lat] GeoJSON
-  )
-  // Close the ring: first point must equal last point
-  if (coords.length > 0) {
-    const first = coords[0]
-    const last = coords[coords.length - 1]
-    if (first[0] !== last[0] || first[1] !== last[1]) {
-      coords.push([first[0], first[1]])
-    }
-  }
-  return coords
+interface SAPNOutage {
+  jobID?: string
+  isPaw?: boolean
+  startDateTime?: string
+  estimatedRestoration?: string
+  endDateTime?: string
+  reason?: string
+  status?: string
+  affectedCustomers?: number
+  affectedSuburbs?: Array<{ name: string; postcode: string }>
+  geometry?: Array<{ lat: number; lng: number }>
 }
 
-function parseOutages(data: unknown, isPlanned: boolean): Outage[] {
-  if (!Array.isArray(data)) return []
+function parseOutages(data: { currentOutages?: SAPNOutage[]; plannedOutages?: SAPNOutage[] }): Outage[] {
+  const outages: Outage[] = []
 
-  return data
-    .filter((item) => item && (item.points ?? item.coordinates ?? item.polygon))
-    .map((item, i): Outage => {
-      const rawCoords = item.points ?? item.coordinates ?? item.polygon ?? []
-      const coords = coordsToGeoJsonPolygon(rawCoords)
-
-      return {
-        id: String(item.id ?? item.outageId ?? `${isPlanned ? 'planned' : 'current'}-${i}`),
-        status: isPlanned ? 'Planned Outage' : String(item.status ?? 'Active Outage'),
-        geometry: {
-          type: 'Polygon',
-          coordinates: [coords],
-        },
-        affectedCustomers: item.customersAffected ?? item.customers ?? undefined,
-        estimatedRestoration: item.estimatedRestoration ?? item.eta ?? undefined,
-      }
+  for (const item of data.currentOutages ?? []) {
+    if (!item.geometry?.length) continue
+    const coords: [number, number][] = item.geometry.map((p) => [p.lng, p.lat])
+    if (coords[0][0] !== coords[coords.length - 1][0] || coords[0][1] !== coords[coords.length - 1][1]) {
+      coords.push([coords[0][0], coords[0][1]])
+    }
+    outages.push({
+      id: String(item.jobID ?? `current-${outages.length}`),
+      status: item.status ?? 'Active',
+      geometry: { type: 'Polygon', coordinates: [coords] },
+      affectedCustomers: item.affectedCustomers,
+      estimatedRestoration: item.estimatedRestoration,
+      affectedSuburbs: item.affectedSuburbs,
+      reason: item.reason,
     })
+  }
+
+  for (const item of data.plannedOutages ?? []) {
+    if (!item.geometry?.length) continue
+    const coords: [number, number][] = item.geometry.map((p) => [p.lng, p.lat])
+    if (coords[0][0] !== coords[coords.length - 1][0] || coords[0][1] !== coords[coords.length - 1][1]) {
+      coords.push([coords[0][0], coords[0][1]])
+    }
+    outages.push({
+      id: String(item.jobID ?? `planned-${outages.length}`),
+      status: 'Planned',
+      geometry: { type: 'Polygon', coordinates: [coords] },
+      affectedCustomers: item.affectedCustomers,
+      estimatedRestoration: item.endDateTime,
+      affectedSuburbs: item.affectedSuburbs,
+      reason: item.reason,
+    })
+  }
+
+  return outages
 }
 
 export async function GET() {
@@ -63,41 +72,35 @@ export async function GET() {
     const ts = Date.now()
     const [currentRes, plannedRes] = await Promise.allSettled([
       fetch(`${CURRENT_URL}?_=${ts}`, {
-        headers: SPOOF_HEADERS,
+        headers: HEADERS,
         cache: 'no-store',
         signal: AbortSignal.timeout(10_000),
       }),
       fetch(`${PLANNED_URL}?_=${ts}`, {
-        headers: SPOOF_HEADERS,
+        headers: HEADERS,
         cache: 'no-store',
         signal: AbortSignal.timeout(10_000),
       }),
     ])
 
-    const outages: Outage[] = []
+    let currentData: { currentOutages?: SAPNOutage[] } = {}
+    let plannedData: { plannedOutages?: SAPNOutage[] } = {}
 
-    for (const [settled, isPlanned] of [
-      [currentRes, false],
-      [plannedRes, true],
-    ] as const) {
-      if (settled.status !== 'fulfilled' || !settled.value.ok) continue
-
-      const text = await settled.value.text()
-
-      // WAF blocked us , returned HTML instead of JSON
-      if (text.trimStart().startsWith('<')) {
-        console.warn('[proxy/outages] WAF blocked request , check Referer header')
-        continue
-      }
-
-      try {
-        const json = JSON.parse(text)
-        outages.push(...parseOutages(json, isPlanned))
-      } catch {
-        console.warn('[proxy/outages] Failed to parse response JSON')
+    if (currentRes.status === 'fulfilled' && currentRes.value.ok) {
+      const text = await currentRes.value.text()
+      if (!text.trimStart().startsWith('<')) {
+        try { currentData = JSON.parse(text) } catch {}
       }
     }
 
+    if (plannedRes.status === 'fulfilled' && plannedRes.value.ok) {
+      const text = await plannedRes.value.text()
+      if (!text.trimStart().startsWith('<')) {
+        try { plannedData = JSON.parse(text) } catch {}
+      }
+    }
+
+    const outages = parseOutages({ ...currentData, ...plannedData })
     return NextResponse.json(outages)
   } catch (err) {
     console.error('[proxy/outages]', err)
