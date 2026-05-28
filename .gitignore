@@ -41,19 +41,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# private project notes (not for public repo)
-backlog.md
-ideas.md
-ARCHITECTURE.md
-REPO-POLICY.md
+# All markdown files except README
+*.md
+!README.md
 
 # SAPN raw data dumps (proprietary, not for public distribution)
 2021-2022 Zone substation data*/
 
-# Superpowers plans/specs (may contain secrets from brainstorming sessions)
-docs/superpowers/
+# Docs directory
+docs/
 
 # Claude Code / AI agent configs
 .claude/
-CLAUDE.md
-AGENTS.md
