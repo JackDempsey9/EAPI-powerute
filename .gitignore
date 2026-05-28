@@ -53,3 +53,11 @@ docs/
 
 # Claude Code / AI agent configs
 .claude/
+
+# Superpowers plugin artifacts
+.superpowers/
+
+# Test results and e2e
+test-results/
+e2e/
+playwright.config.ts
